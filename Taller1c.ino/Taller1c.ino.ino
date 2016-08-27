@@ -18,14 +18,15 @@ Encoder enc(PIN_ENC_A, PIN_ENC_B);
 long prev_pos = 0;  // pos anterior del encoder
 float tiempo_anterior_control_loop;
 
-float I_error = 0;
-double pid_input, pid_output, pid_setpoint, pid_last_input;
+volatile float I_error = 0;
+volatile double pid_input, pid_output, pid_setpoint, pid_last_input;
 
 /*constantes globales pid */
 #define PWM_MIN 50
-#define PWM_MAX 205
+#define PWM_MAX 255
+#define PWM_MAX_PID (PWM_MAX - PWM_MIN)
 #define PID_P  20
-#define PID_I  20
+#define PID_I  20  
 #define PID_D  30
 #define CICLO_CONTROL_TIEMPO 10 // milisegundos
 
@@ -34,7 +35,7 @@ void setup()
   // seteo serial
   Serial.begin(115200);
    
-  pid_setpoint = 2;
+  pid_setpoint = 1;
   pid_last_input = 0;
   tiempo_anterior_control_loop = millis();
   
@@ -62,29 +63,38 @@ void loop()
   actualizar_simulacion();
   #endif
 
-  ciclo_control();  
+  ciclo_control();
 }
 
 /***************************** CICLO DE CONTROL **********************/
 
 void ciclo_control()
 {
-  float tiempo_control = millis();
+  double tiempo_control = millis();
   int delta_t = tiempo_control  - tiempo_anterior_control_loop;
   if (delta_t >= CICLO_CONTROL_TIEMPO)
   {
     tiempo_anterior_control_loop = tiempo_control;
-
-    float velocidad = calcular_velocidad(delta_t);
-    pid_input=velocidad;
-    /************* AGREGUE EL CODIGO AQUI **************/
-    double P_error=pid_setpoint-pid_input;
-    double D_error=pid_input-pid_last_input; //integral del error
-    I_error=(I_error+P_error); // posible saturacion
-    pid_output=PID_P*P_error+PID_I*I_error+PID_D*D_error;
-    int pwm = pid_output; // escribir en esta variable el pwm que se manda al motor (como valor positivo/negativo)
-    set_motor_pwm(pwm);
+    
+    volatile float velocidad = calcular_velocidad(delta_t);    
+    pid_input=double(velocidad);
     pid_last_input=pid_input;
+    
+    volatile double D_error=pid_input-pid_last_input; //integral del error
+    volatile double P_error=pid_setpoint-pid_input;
+    I_error=I_error+P_error;
+    volatile double PID_I_sat= max(min(I_error*PID_I,PWM_MAX_PID), -PWM_MAX_PID);
+    
+    pid_output=max(min(PID_P*P_error+PID_I_sat+PID_D*D_error,PWM_MAX_PID), -PWM_MAX_PID);
+    
+    volatile int pwm = int(pid_output); // escribir en esta variable el pwm que se manda al motor (como valor positivo/negativo)
+    if(pwm>0){
+      pwm = pwm + PWM_MIN;
+    }else if (pwm<0){
+      pwm = pwm - PWM_MIN;
+    }
+    
+    set_motor_pwm(pwm);
     Serial.print("vel: "); Serial.print(velocidad,5); Serial.print(" pwm: "); Serial.print(pwm); Serial.print(" t: "); Serial.print(tiempo_control,5);Serial.print(" delta_t: "); Serial.println(delta_t);
   }  
 }
@@ -98,25 +108,22 @@ float calcular_velocidad(double delta_t)
   long dif_pos=0;
   long act_pos;
   float resultado=0;
-  act_pos=encoder_position();
+  act_pos=encoder_position()*360.0/480.0;
   dif_pos=act_pos-prev_pos;
-  prev_pos=act_pos;
-  resultado=(dif_pos*360)/480;
-  
-  return resultado/delta_t; // modificame
-  //return 3.5;
+  resultado=dif_pos;
+  prev_pos=act_pos; 
+  return (resultado/float(delta_t)); 
 }
 
 void set_motor_pwm(int pwm)
 {
-
-  if(pwm>0&&pwm<PWM_MAX){
-    analogWrite(PIN_MOT_B,pwm+PWM_MIN);
+  if(pwm>0){
+    analogWrite(PIN_MOT_B,pwm);
     analogWrite(PIN_MOT_A,0);
   }
-  else if(pwm<0&&pwm>(-PWM_MAX)){
+  else if(pwm<0){
     analogWrite(PIN_MOT_B,0);
-    analogWrite(PIN_MOT_A,-pwm+PWM_MIN);
+    analogWrite(PIN_MOT_A,-pwm);
   }
   else{
     analogWrite(PIN_MOT_A,0);
