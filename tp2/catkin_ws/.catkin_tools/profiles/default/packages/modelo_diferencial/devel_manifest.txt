@@ -1,0 +1,5 @@
+modelo_diferencial
+/home/hbari/Downloads/catkin_ws/devel/.private/modelo_diferencial/lib/modelo_diferencial/pioneer_odometry /home/hbari/Downloads/catkin_ws/devel/lib/modelo_diferencial/pioneer_odometry
+/home/hbari/Downloads/catkin_ws/devel/.private/modelo_diferencial/lib/pkgconfig/modelo_diferencial.pc /home/hbari/Downloads/catkin_ws/devel/lib/pkgconfig/modelo_diferencial.pc
+/home/hbari/Downloads/catkin_ws/devel/.private/modelo_diferencial/share/modelo_diferencial/cmake/modelo_diferencialConfig.cmake /home/hbari/Downloads/catkin_ws/devel/share/modelo_diferencial/cmake/modelo_diferencialConfig.cmake
+/home/hbari/Downloads/catkin_ws/devel/.private/modelo_diferencial/share/modelo_diferencial/cmake/modelo_diferencialConfig-version.cmake /home/hbari/Downloads/catkin_ws/devel/share/modelo_diferencial/cmake/modelo_diferencialConfig-version.cmake

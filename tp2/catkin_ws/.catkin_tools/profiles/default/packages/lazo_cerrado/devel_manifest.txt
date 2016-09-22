@@ -1,0 +1,6 @@
+lazo_cerrado
+/home/hbari/Downloads/catkin_ws/devel/.private/lazo_cerrado/lib/pkgconfig/lazo_cerrado.pc /home/hbari/Downloads/catkin_ws/devel/lib/pkgconfig/lazo_cerrado.pc
+/home/hbari/Downloads/catkin_ws/devel/.private/lazo_cerrado/lib/lazo_cerrado/logger /home/hbari/Downloads/catkin_ws/devel/lib/lazo_cerrado/logger
+/home/hbari/Downloads/catkin_ws/devel/.private/lazo_cerrado/lib/lazo_cerrado/trajectory_follower /home/hbari/Downloads/catkin_ws/devel/lib/lazo_cerrado/trajectory_follower
+/home/hbari/Downloads/catkin_ws/devel/.private/lazo_cerrado/share/lazo_cerrado/cmake/lazo_cerradoConfig.cmake /home/hbari/Downloads/catkin_ws/devel/share/lazo_cerrado/cmake/lazo_cerradoConfig.cmake
+/home/hbari/Downloads/catkin_ws/devel/.private/lazo_cerrado/share/lazo_cerrado/cmake/lazo_cerradoConfig-version.cmake /home/hbari/Downloads/catkin_ws/devel/share/lazo_cerrado/cmake/lazo_cerradoConfig-version.cmake
