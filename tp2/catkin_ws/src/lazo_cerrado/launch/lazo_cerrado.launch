@@ -14,7 +14,7 @@
   </node>
 
   <node pkg="lazo_cerrado" type="trajectory_follower" name="trajectory_follower" output="screen" >
-    <param name="goal_selection" type="str" value="TIMED_BASED"/>
+    <param name="goal_selection" type="str" value="PURSUIT_BASED"/>
     
     <param name="fixed_goal_x" type="double" value="5"/>
     <param name="fixed_goal_y" type="double" value="1"/>
