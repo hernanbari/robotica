@@ -1,7 +1,0 @@
-lazo_abierto
-/home/hbari/Downloads/catkin_ws/devel/.private/lazo_abierto/lib/libtrajectory_controller.so /home/hbari/Downloads/catkin_ws/devel/lib/libtrajectory_controller.so
-/home/hbari/Downloads/catkin_ws/devel/.private/lazo_abierto/lib/pkgconfig/lazo_abierto.pc /home/hbari/Downloads/catkin_ws/devel/lib/pkgconfig/lazo_abierto.pc
-/home/hbari/Downloads/catkin_ws/devel/.private/lazo_abierto/lib/lazo_abierto/trajectory_generator /home/hbari/Downloads/catkin_ws/devel/lib/lazo_abierto/trajectory_generator
-/home/hbari/Downloads/catkin_ws/devel/.private/lazo_abierto/lib/lazo_abierto/trajectory_follower /home/hbari/Downloads/catkin_ws/devel/lib/lazo_abierto/trajectory_follower
-/home/hbari/Downloads/catkin_ws/devel/.private/lazo_abierto/share/lazo_abierto/cmake/lazo_abiertoConfig.cmake /home/hbari/Downloads/catkin_ws/devel/share/lazo_abierto/cmake/lazo_abiertoConfig.cmake
-/home/hbari/Downloads/catkin_ws/devel/.private/lazo_abierto/share/lazo_abierto/cmake/lazo_abiertoConfig-version.cmake /home/hbari/Downloads/catkin_ws/devel/share/lazo_abierto/cmake/lazo_abiertoConfig-version.cmake

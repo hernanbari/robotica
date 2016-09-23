@@ -101,6 +101,10 @@ bool KinematicPositionController::control(const ros::Time& t, double& v, double&
 double dist2(double x0, double y0, double x1, double y1)
 { return sqrt((x1-x0)*(x1-x0) + (y1-y0)*(y1-y0));}
 
+// Lookahead distance
+#define LKAHD_DIST 1
+set<int> prev_wpoints;
+
 bool KinematicPositionController::getPursuitBasedGoal(const ros::Time& t, double& x, double& y, double& a)
 {
   // Los obtienen los valores de la posicion y orientacion actual.
@@ -116,6 +120,12 @@ bool KinematicPositionController::getPursuitBasedGoal(const ros::Time& t, double
    * y luego buscar el primer waypoint que se encuentre a una distancia predefinida de lookahead en x,y */
   
   /* NOTA: De esta manera les es posible recorrer la trayectoria requerida */  
+
+  if (trajectory.points.size() == 0){
+    return false;
+  }
+  int nearest_wpoint = -1;
+  double nearest_dist = -1;
   for(unsigned int i = 0; i < trajectory.points.size(); i++)
   {
     // Recorren cada waypoint definido
@@ -127,8 +137,70 @@ bool KinematicPositionController::getPursuitBasedGoal(const ros::Time& t, double
     double wpoint_a = tf2::getYaw(wpoint.transform.rotation);
     
     //...
+    double dist_to_wpoint = dist2(current_x, current_y, wpoint_x, wpoint_y);
+    if (nearest_wpoint == -1 || (find(prev_wpoints.begin(), prev_wpoints.end(),i) !=  prev_wpoints.end() && dist_to_wpoint < nearest_dist){
+      nearest_wpoint = i;
+      nearest_wpoint_x = wpoint_x;
+      nearest_wpoint_y = wpoint_y;
+      nearest_wpoint_a = wpoint_a;
+      nearest_dist = dist_to_wpoint;
+    }
+  }
+  if (nearest_dist > LKAHD_DIST || i == trajectory.points.size()-1){
+    x = nearest_wpoint_x;
+    y = nearest_wpoint_y;
+    a = nearest_wpoint_a;
+  }else {
+    
+    prev_wpoints.insert(nearest_wpoint);
+
+    const robmovil_msgs::TrajectoryPoint& near_wpoint = trajectory.points[nearest_wpoint];
+    double x0 = near_wpoint.transform.translation.x;
+    double y0 = near_wpoint.transform.translation.y;
+
+    const robmovil_msgs::TrajectoryPoint& next_wpoint = trajectory.points[nearest_wpoint+1];
+    double x1 = next_wpoint.transform.translation.x;
+    double y1 = next_wpoint.transform.translation.y;
+    
+    // Recta entre dos puntos:
+   // m = (y1-y0)/(x1-x0)
+   // c = m*(-x0)+y0
+
+   // Interseccion circulo y recta:
+   // y = mx+c
+   // r^2 = (x-p)^2+(y-q)^2
+   
+   // A = m^2+1
+   // B = 2(mc-mq-p)
+   // C = q^2-r^2+p^2-2cq+c^2
+
+   // x = (-B+-sqrt(B^2-4*A*C))/2*A
+   // y = m*x+c
+  
+    // Recta entre dos puntos:  
+    double m = (y1-y0)/(x1-x0);
+    double c = m*(-x0)+y0;
+    double p = current_x;
+    double q = current_y;
+
+
+    // Interseccion circulo y recta:
+    double A = m^2+1;
+    double B = 2*(m*c-m*q-p);
+    double C = q^2-r^2+p^2-2*c*q+c^2;
+
+
+
+    x = (-B+-sqrt(B^2-4*A*C))/2*A;
+    y = m*x+c;
+
+    // La orientacion a seguir es la pendiente de la recta (positiva o negativa???)
+    a = m;
+   
 
   }
+
+
   
   /* retorna true si es posible definir un goal, false si se termino la trayectoria y no quedan goals. */
   return true;
