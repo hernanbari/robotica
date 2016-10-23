@@ -48,9 +48,9 @@ SpaceConfiguration robmovil_planning::PioneerRRTPlanner::generateRandomConfig()
     double close_area_theta = 1;
 
     if(chance < goal_bias_){
-        close_area = 0; //1;
-        close_area_distance = 1; //0.1;
-        close_area_theta = 1; //0.25;
+        close_area = 1;
+        close_area_distance = 0.1;
+        close_area_theta = 0.25;
     }
 
 
@@ -61,7 +61,12 @@ SpaceConfiguration robmovil_planning::PioneerRRTPlanner::generateRandomConfig()
     double y =      randBetween(0, close_area_distance*grid_->info.width);
     double theta =  randBetween(-M_PI*close_area_theta,M_PI*close_area_theta);
 
-    SpaceConfiguration rand( {x+goal_config_.get(0)*close_area, y+goal_config_.get(1)*close_area, angles::normalize_angle(theta+goal_config_.get(2)*close_area) } );
+    double x_orig;
+    double y_orig;
+    getOriginOfCell((uint)0,(uint)0, x_orig,y_orig);
+
+
+    SpaceConfiguration rand( {x_orig + x + goal_config_.get(0)*close_area, y_orig + y + goal_config_.get(1)*close_area, angles::normalize_angle(theta+goal_config_.get(2)*close_area) } );
 
     return rand;
 }
@@ -126,13 +131,11 @@ SpaceConfiguration robmovil_planning::PioneerRRTPlanner::steer()
    *           - Pensar en la conversion de coordenadas polares a cartesianas al establecer la nueva configuracion
    *           - Utilizar angles::normalize_angle() */
   
-  /* Ejemplo de como construir una posible configuracion: */
-  
   SpaceConfiguration steer;
   
   /* Conjunto de steers ya ocupados en la configuracion near_config_ */
   const std::list<SpaceConfiguration> occupied_steerings = graph_[near_config_];
-  std::vector<SpaceConfiguration> free_steerings;
+  std::vector<SpaceConfiguration> free_steerings; // NO LO USAMOS
   double min_dist = std::numeric_limits<double>::max();
   
   /* RECOMENDACION: Establecer configuraciones posibles en free_steerings y calcular la mas cercana a rand_config_ */
@@ -159,7 +162,6 @@ SpaceConfiguration robmovil_planning::PioneerRRTPlanner::steer()
 bool robmovil_planning::PioneerRRTPlanner::isFree()
 {
   /* COMPLETAR: Utilizar la variable global new_config_ para establecer si existe un area segura alrededor de esta */
-// isCellOccupy(uint(n_i), uint(n_j))
 
   for(int i=-1; i<2; i++){
     for(int j=-1; j<2; j++){
