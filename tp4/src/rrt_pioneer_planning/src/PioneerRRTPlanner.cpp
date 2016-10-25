@@ -43,31 +43,32 @@ SpaceConfiguration robmovil_planning::PioneerRRTPlanner::generateRandomConfig()
      *                grid_->info.width, grid_->info.height, grid_->info.resolution */  
     
     double chance = randBetween(0, 1);
-    double close_area = 0;
-    double close_area_distance = 1;
-    double close_area_theta = 1;
+    double close_area_distance = 0.2;
+    double close_area_theta = 0.1;
 
+    double x;
+    double y;
+    double theta; 
+    
+    
     if(chance < goal_bias_){
-        close_area = 1;
-        close_area_distance = 0.1;
-        close_area_theta = 0.25;
+        x =  goal_config_.get(0) + randBetween(-close_area_distance, close_area_distance);
+        y =  goal_config_.get(1) + randBetween(-close_area_distance, close_area_distance);
+        theta =  goal_config_.get(2) + randBetween(-close_area_theta, close_area_theta);
+    }else{
+        double x_orig;
+        double y_orig;
+        getOriginOfCell((uint)0,(uint)0, x_orig,y_orig);
+        x = x_orig + randBetween(0, grid_->info.width*grid_->info.resolution);
+        y = y_orig + randBetween(0, grid_->info.height*grid_->info.resolution);
+        theta =  randBetween(-M_PI,M_PI);
+        
     }
 
+    SpaceConfiguration rand( {x, y, theta});
 
-    // PARA QUE SE DEBERIA USAR getOriginOfCell() ????
-
-
-    double x =      randBetween(0, close_area_distance*grid_->info.width*grid_->info.resolution);
-    double y =      randBetween(0, close_area_distance*grid_->info.height*grid_->info.resolution);
-    double theta =  randBetween(-M_PI*close_area_theta,M_PI*close_area_theta);
-
-    double x_orig;
-    double y_orig;
-    getOriginOfCell((uint)0,(uint)0, x_orig,y_orig);
-
-
-    SpaceConfiguration rand( {x_orig + x + goal_config_.get(0)*close_area, y_orig + y + goal_config_.get(1)*close_area, angles::normalize_angle(theta+goal_config_.get(2)*close_area) } );
-
+    // SpaceConfiguration rand( {goal_config_.get(0),goal_config_.get(1), angles::normalize_angle(goal_config_.get(2)) } );
+    
     return rand;
 }
 

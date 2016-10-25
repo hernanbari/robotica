@@ -19,7 +19,7 @@
   </node> -->
 
   <node pkg="rrt_pioneer_planning" type="rrt_pioneer_planning" name="rrt_pioneer_planning" output="screen" > 
-    <param name="goal_bias" type="double" value="0.2"/>
+    <param name="goal_bias" type="double" value="0.5"/>
     <param name="max_iterations" type="int" value="20000"/>
     <param name="linear_velocity_stepping" type="double" value="0.05"/>
     <param name="angular_velocity_stepping" type="double" value="0.025"/>
