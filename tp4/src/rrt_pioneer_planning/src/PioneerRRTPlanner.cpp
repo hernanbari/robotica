@@ -57,8 +57,8 @@ SpaceConfiguration robmovil_planning::PioneerRRTPlanner::generateRandomConfig()
     // PARA QUE SE DEBERIA USAR getOriginOfCell() ????
 
 
-    double x =      randBetween(0, close_area_distance*grid_->info.height);
-    double y =      randBetween(0, close_area_distance*grid_->info.width);
+    double x =      randBetween(0, close_area_distance*grid_->info.width*grid_->info.resolution);
+    double y =      randBetween(0, close_area_distance*grid_->info.height*grid_->info.resolution);
     double theta =  randBetween(-M_PI*close_area_theta,M_PI*close_area_theta);
 
     double x_orig;
