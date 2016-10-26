@@ -42,9 +42,11 @@ SpaceConfiguration robmovil_planning::PioneerRRTPlanner::generateRandomConfig()
      *           - Utilizar las funciones getOriginOfCell() y la informacion de la grilla para establecer el espacio de busqueda:
      *                grid_->info.width, grid_->info.height, grid_->info.resolution */  
     
+
+    // EXPLIQUENE NORMALIZE ANGLE Y CONFIG, CHECKEAR EN CADA CASSO DONDE VA
     double chance = randBetween(0, 1);
-    double close_area_distance = 0.2;
-    double close_area_theta = 0.1;
+    double close_area_distance = 0.1;
+    double close_area_theta = M_PI/4;
 
     double x;
     double y;
@@ -52,9 +54,16 @@ SpaceConfiguration robmovil_planning::PioneerRRTPlanner::generateRandomConfig()
     
     
     if(chance < goal_bias_){
-        x =  goal_config_.get(0) + randBetween(-close_area_distance, close_area_distance);
-        y =  goal_config_.get(1) + randBetween(-close_area_distance, close_area_distance);
-        theta =  goal_config_.get(2) + randBetween(-close_area_theta, close_area_theta);
+        double x_rand = randBetween(-close_area_distance, close_area_distance);
+        double y_rand = randBetween(-close_area_distance, close_area_distance);
+        
+
+        x =  goal_config_.get(0) + x_rand;
+        y =  goal_config_.get(1) + y_rand;
+        theta =  angles::normalize_angle(goal_config_.get(2) + randBetween(-close_area_theta, close_area_theta));
+        // ROS_INFO_STREAM("x_rand: " << x_rand << " y_rand: " << y_rand);
+        // ROS_INFO_STREAM("goal_config_.get(0): " << goal_config_.get(0) << " goal_config_.get(1): " << goal_config_.get(1)) << " goal_config_.get(2): " << goal_config_.get(2)) ;
+        // ROS_INFO_STREAM("x: " << x << " y: " << y << " thetha: " << theta)  ;
     }else{
         double x_orig;
         double y_orig;
@@ -72,6 +81,10 @@ SpaceConfiguration robmovil_planning::PioneerRRTPlanner::generateRandomConfig()
     return rand;
 }
 
+double dist_eucl(double x0,double y0,double x1,double y1){
+  return pow( pow(x0-x1,2)+pow(y0-y1,2), 0.5);
+}
+
 double robmovil_planning::PioneerRRTPlanner::distancesBetween(const SpaceConfiguration& c1, const SpaceConfiguration& c2)
 {
   /* COMPLETAR: Funcion auxiliar recomendada para evaluar la distancia entre configuraciones
@@ -79,16 +92,12 @@ double robmovil_planning::PioneerRRTPlanner::distancesBetween(const SpaceConfigu
    * ATENCION: Utilizar abs( angles::shortest_angular_distance(c1.get(2), c2.get(2)) )
    *           para medir la distancia entre las orientaciones */
   
-  double K_dist=1, K_ori=0.5;
+  double K_dist=0.9, K_ori=(1-K_dist);
 
   double dist_ori = abs( angles::shortest_angular_distance(c1.get(2), c2.get(2)) );
-  double dist_euc = pow( pow(c1.get(0)-c2.get(0),2) + pow(c1.get(1)-c2.get(1),2) , 0.5);
+  double dist_euc = dist_eucl(c1.get(0),c1.get(1), c2.get(0), c2.get(1));
 
-  return K_dist*dist_euc  + K_ori*dist_ori;
-}
-
-double dist_eucl(double x0,double y0,double x1,double y1){
-  return pow( pow(x0-x1,2)+pow(y0-y1,2), 0.5);
+  return K_dist*dist_euc + K_ori*dist_ori;
 }
 
 SpaceConfiguration robmovil_planning::PioneerRRTPlanner::nearest()
@@ -103,13 +112,6 @@ SpaceConfiguration robmovil_planning::PioneerRRTPlanner::nearest()
   SpaceConfiguration nearest;
   double min_distance = std::numeric_limits<double>::max(); 
   
-
-  // PREGUNTA: LOS VECINOS DE UN NODO SIN HIJOS LIBRES SON:
-  //           - EL "PREVIO" 
-  //           - LOS 3 ADONDE PUEDE LLEGAR 
-  //           ????????
-  //           => SI TIENE HIJOS LIBRES, EL VALUE DEL DICT TIENE QUE SER MENOR A 4 ó A < 3 ?????
-
   for(const auto& config : graph_ )
   {
     double d = distancesBetween(config.first, rand_config_);
@@ -136,20 +138,20 @@ SpaceConfiguration robmovil_planning::PioneerRRTPlanner::steer()
   
   /* Conjunto de steers ya ocupados en la configuracion near_config_ */
   const std::list<SpaceConfiguration> occupied_steerings = graph_[near_config_];
-  std::vector<SpaceConfiguration> free_steerings; // NO LO USAMOS
+  // std::vector<SpaceConfiguration> free_steerings; // NO LO USAMOS
   double min_dist = std::numeric_limits<double>::max();
   
   /* RECOMENDACION: Establecer configuraciones posibles en free_steerings y calcular la mas cercana a rand_config_ */
   
   for(int i = -1; i<2; i++){
 
-    double x_posible = near_config_.get(0) + Vx_step_*cos(angles::normalize_angle(near_config_.get(2)+ i*Wz_step_));
-    double y_posible = near_config_.get(1) + Vx_step_*sin(angles::normalize_angle(near_config_.get(2)+ i*Wz_step_));
+    double x_posible = near_config_.get(0) + Vx_step_*cos(near_config_.get(2)+ i*Wz_step_);
+    double y_posible = near_config_.get(1) + Vx_step_*sin(near_config_.get(2)+ i*Wz_step_);
     double theta_posible = angles::normalize_angle(near_config_.get(2)+ i*Wz_step_);
 
     SpaceConfiguration s_posible({ x_posible, y_posible, theta_posible });
-
     double d = distancesBetween(s_posible, rand_config_);
+
     if(d < min_dist && find(occupied_steerings.begin(), occupied_steerings.end(), s_posible) == occupied_steerings.end()){
       min_dist = d;
       steer = s_posible;
@@ -166,8 +168,8 @@ bool robmovil_planning::PioneerRRTPlanner::isFree()
 
   for(int i=-1; i<2; i++){
     for(int j=-1; j<2; j++){
-      double x = new_config_.get(0)+i*grid_->info.resolution;
-      double y = new_config_.get(1)+j*grid_->info.resolution;
+      double x = new_config_.get(0)+i*grid_->info.resolution; //*4/3;
+      double y = new_config_.get(1)+j*grid_->info.resolution; //*4/3;
       if(isPositionOccupy(x,y))
         return false;
     }
