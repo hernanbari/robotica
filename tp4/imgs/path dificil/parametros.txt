@@ -1,0 +1,24 @@
+  BIAS BAJO = 0.2
+BIAS ALTO = 0.8
+
+VEL ANGULAR ALTA = 0.08
+VEL ANGULAR BAJA = 0.04
+
+
+
+  <node pkg="rrt_pioneer_planning" type="rrt_pioneer_planning" name="rrt_pioneer_planning" output="screen" > 
+    <param name="goal_bias" type="double" value="0.2"/>
+    <param name="max_iterations" type="int" value="10000"/>
+    <param name="linear_velocity_stepping" type="double" value="0.05"/>
+    <param name="angular_velocity_stepping" type="double" value="0.08"/>
+  </node>
+
+
+      double x = new_config_.get(0)+i*grid_->info.resolution;
+
+
+  double K_dist=0.9, K_ori=(1-K_dist);
+
+
+    double close_area_distance = 0.1;
+    double close_area_theta = M_PI/4;
