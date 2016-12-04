@@ -10,5 +10,5 @@ class FeedForwardController : public TrajectoryFollower
 
   protected:
 
-    bool control(const ros::Time& t, double& v, double& w) override;
+    bool control(const ros::Time& t, double& vx, double& vy, double& w) override;
 };

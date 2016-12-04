@@ -6,7 +6,7 @@
 
   <node pkg="modelo_diferencial" type="pioneer_odometry" name="pioneer_odometry" output="screen" />
   
-  <node pkg="lazo_abierto" type="trajectory_generator" name="trajectory_generator" output="screen" >
+  <node pkg="lazo_abierto" type="trajectory_waypoints" name="trajectory_waypoints" output="screen" >
     <param name="stepping" type="double" value="0.1"/>
     <param name="total_time" type="double" value="20"/>
     <param name="amplitude" type="double" value="1"/>

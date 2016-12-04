@@ -30,8 +30,8 @@ void TrajectoryFollower::timerCallback(const ros::TimerEvent& event)
 
   // Aplicar la ley de control
 
-  double v, w;
-  if( not control(t, v, w) ) {
+  double vx, vy, w;
+  if( not control(t, vx, vy, w) ) {
     ROS_INFO("Trajectory finished");
     timer_.stop();
     geometry_msgs::Twist cmd;
@@ -43,8 +43,8 @@ void TrajectoryFollower::timerCallback(const ros::TimerEvent& event)
 
   geometry_msgs::Twist cmd;
 
-  cmd.linear.x = v;
-  cmd.linear.y = 0;
+  cmd.linear.x = vx;
+  cmd.linear.y = vy;
   cmd.linear.z = 0;
 
   cmd.angular.x = 0;

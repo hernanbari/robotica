@@ -31,7 +31,9 @@ KinematicPositionController::KinematicPositionController(ros::NodeHandle& nh) :
  * - K_RHO < K_ALPHA
  * - K_BETA < 0
  */
-#define K_RHO 0.4
+// CHECKEAR VALORES, K_RHO EN DIFERENCIAL ERA 0.4
+#define K_RHO 0.2
+#define K_SIGMA 0.2
 #define K_ALPHA 0.7
 #define K_BETA -0.1
 
@@ -40,7 +42,7 @@ double lineal_interp(const ros::Time& t0, const ros::Time& t1, double y0, double
   return y0 + (t - t0).toSec() * (y1 - y0) / (t1 - t0).toSec();
 }
 
-bool KinematicPositionController::control(const ros::Time& t, double& v, double& w)
+bool KinematicPositionController::control(const ros::Time& t, double& vv, double& vy, double& w)
 {
   // Kinematic Position Control.
   // src: http://cs.gmu.edu/~kosecka/cs485/lec04-control.pdf
@@ -68,15 +70,17 @@ bool KinematicPositionController::control(const ros::Time& t, double& v, double&
   double theta_siegwart = current_a - goal_a;
 
   // transform error data to polar coordinates.
-  double rho = sqrt( dx_rot*dx_rot + dy_rot*dy_rot );
+  double rho = abs(dx_rot);
+  double sigma = abs(dy_rot);
   double alpha = angles::normalize_angle(atan2(dy_rot, dx_rot) - theta_siegwart);
   double beta =  angles::normalize_angle(-theta_siegwart - alpha);
 
   // use the control law to compute velocity commands.
-  v = K_RHO * rho;
+  vx = K_RHO * rho;
+  vy = K_SIGMA * sigma;
   w = K_ALPHA * alpha + K_BETA * beta;
 
-  ROS_INFO_STREAM("atan2: " << atan2(dy, dx) << " theta siegwart: " << theta_siegwart << " expected_atheta: "  << current_a << " rho: " << rho << " alpha: " << alpha << " beta: " << beta << " v: " << v << " w: " << w);
+  ROS_INFO_STREAM("atan2: " << atan2(dy, dx) << " theta siegwart: " << theta_siegwart << " expected_atheta: "  << current_a << " rho: " << rho << " sigma: " << sigma << " alpha: " << alpha << " beta: " << beta << " vx: " << vx << " vy: " << vy << " w: " << w);
 
   return true;
 }

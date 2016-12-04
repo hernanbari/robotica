@@ -8,7 +8,8 @@
 
 struct waypoint {
   double time_from_start;
-  double target_lin_vel;
+  double target_x_lin_vel;
+  double target_y_lin_vel;
   double target_ang_vel;
 };
 
@@ -51,14 +52,16 @@ int main(int argc, char** argv)
   for (waypoint wpoint : waypoints)
   {
     double t = wpoint.time_from_start;
-    double vl = wpoint.target_lin_vel;
+    double vlx = wpoint.target_x_lin_vel;
+    double vly = wpoint.target_y_lin_vel;
     double va = wpoint.target_ang_vel;
 
     trajectory_msgs::JointTrajectoryPoint point_msg;
     
     point_msg.time_from_start = ros::Duration(t);
 
-    point_msg.velocities.push_back( vl );
+    point_msg.velocities.push_back( vlx );
+    point_msg.velocities.push_back( vly );
     point_msg.velocities.push_back( va );
 
     trajectory_msg.points.push_back( point_msg );

@@ -9,7 +9,7 @@ double lineal_interp(const ros::Time& t0, const ros::Time& t1, double y0, double
   return y0 + (t - t0).toSec() * (y1 - y0) / (t1 - t0).toSec();
 }
 
-bool FeedForwardController::control(const ros::Time& t, double& v, double& w)
+bool FeedForwardController::control(const ros::Time& t, double& vx, double& vy,double& w)
 {
   size_t next_point_idx;
 
@@ -38,11 +38,13 @@ bool FeedForwardController::control(const ros::Time& t, double& v, double& w)
 
   ROS_INFO_STREAM("inter: " << t0 << " " << t1 << " " << vx0 << " " << vx1 << " " << va0 << " " << vx1 << " " << t);
 
-  double vx = lineal_interp(t0, t1, vx0, vx1, t);
-  double vy = lineal_interp(t0, t1, vy0, vy1, t);
+  // double vx = lineal_interp(t0, t1, vx0, vx1, t);
+  // double vy = lineal_interp(t0, t1, vy0, vy1, t);
   double va = lineal_interp(t0, t1, va0, va1, t);
 
-  v = sqrt(vx*vx + vy*vy);
+  //v = sqrt(vx*vx + vy*vy);
+  vx = lineal_interp(t0, t1, vx0, vx1, t);
+  vy = lineal_interp(t0, t1, vy0, vy1, t);
   w = va;
 
   return true;

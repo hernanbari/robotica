@@ -19,7 +19,7 @@ class TrajectoryFollower
      * @return
      *   false cuando termina de ejecutar la trayectoria, true en caso contrario.
      */
-    virtual bool control(const ros::Time& t, double& v, double& w) = 0;
+    virtual bool control(const ros::Time& t, double& vx, double& vy, double& w) = 0;
 
     const ros::Time& getInitialTime() const
     { return t0_; }
