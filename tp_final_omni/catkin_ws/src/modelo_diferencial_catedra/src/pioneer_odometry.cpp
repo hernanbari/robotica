@@ -5,9 +5,13 @@
 
 using namespace robmovil;
 
-#define WHEEL_BASELINE 0.331
-#define WHEEL_RADIUS 0.0975
+// CHECKEAR UNIDADES DE CONSTANTES
+#define WHEEL_RADIUS 0.050
 #define ENCODER_TICKS 500.0
+#define LX 0.175
+#define LY 0.175
+
+
 
 inline double wrapAngle( double angle )
 {
@@ -21,8 +25,10 @@ PioneerOdometry::PioneerOdometry(ros::NodeHandle& nh)
   // Nos suscribimos a los comandos de velocidad en el tópico "/robot/cmd_vel" de tipo geometry_msgs::Twist
   twist_sub_ = nh.subscribe("/robot/cmd_vel", 1, &PioneerOdometry::on_velocity_cmd, this);
 
-  vel_pub_left_ = nh.advertise<std_msgs::Float64>("/robot/left_wheel/cmd_vel", 1);
-  vel_pub_right_ = nh.advertise<std_msgs::Float64>("/robot/right_wheel/cmd_vel", 1);
+  vel_pub_front_left_ = nh.advertise<std_msgs::Float64>("/robot/front_left_wheel/cmd_vel", 1);
+  vel_pub_front_right_ = nh.advertise<std_msgs::Float64>("/robot/front_right_wheel/cmd_vel", 1);
+  vel_pub_rear_left_ = nh.advertise<std_msgs::Float64>("/robot/rear_left_wheel/cmd_vel", 1);
+  vel_pub_rear_right_ = nh.advertise<std_msgs::Float64>("/robot/rear_right_wheel/cmd_vel", 1);
 
   encoder_sub_ = nh.subscribe("/robot/encoders", 1, &PioneerOdometry::on_encoder_ticks, this);
 
@@ -33,27 +39,47 @@ PioneerOdometry::PioneerOdometry(ros::NodeHandle& nh)
 
 void PioneerOdometry::on_velocity_cmd(const geometry_msgs::Twist& twist)
 {
-  double linearVel = twist.linear.x;
+  double xLinearVel = twist.linear.x;
+  double yLinearVel = twist.linear.y;
   double angularVel = twist.angular.z;
   
-  double vLeft = (linearVel - angularVel * (WHEEL_BASELINE/2)) / WHEEL_RADIUS;
-  double vRight = (linearVel + angularVel * (WHEEL_BASELINE/2)) / WHEEL_RADIUS;
+  double vFrontLeft 	= (1/WHEEL_RADIUS) * (xLinearVel-yLinearVel-(LX+LY)*angularVel);
+  double vFrontRight 	= (1/WHEEL_RADIUS) * (xLinearVel+yLinearVel+(LX+LY)*angularVel);
+  double vRearLeft 		= (1/WHEEL_RADIUS) * (xLinearVel+yLinearVel-(LX+LY)*angularVel);
+  double vRearRight 	= (1/WHEEL_RADIUS) * (xLinearVel-yLinearVel+(LX+LY)*angularVel);
 
-  // publish left velocity
+  // publish front left velocity
   {
     std_msgs::Float64 msg;
-    msg.data = vLeft;
+    msg.data = vFrontLeft;
 
-    vel_pub_left_.publish( msg );
+    vel_pub_front_left_.publish( msg );
   }
 
   // publish right velocity
   {
     std_msgs::Float64 msg;
-    msg.data = vRight;
+    msg.data = vFrontRight
 
-    vel_pub_right_.publish( msg );
+    vel_pub_front_right_.publish( msg );
   }
+
+  // publish right velocity
+  {
+    std_msgs::Float64 msg;
+    msg.data = vRearLeft;
+
+    vel_pub_rear_left_.publish( msg );
+  }
+  
+  // publish right velocity
+  {
+    std_msgs::Float64 msg;
+    msg.data = vRearRight;
+
+    vel_pub_rear_right_.publish( msg );
+  }
+  
 }
 
 void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::EncoderTicks& encoder)
@@ -62,32 +88,43 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::EncoderTicks& encode
   // inicializo las variables de estado.
   if (not ticks_initialized_) {
     ticks_initialized_ = true;
-    last_ticks_left_ = encoder.ticks_left.data;
-    last_ticks_right_ = encoder.ticks_right.data;
     last_ticks_time = encoder.header.stamp;
+    
+    last_ticks_front_left_ 	= encoder.ticks[0];
+    last_ticks_front_right_ = encoder.ticks[1];
+    last_ticks_rear_left_ 	= encoder.ticks[2];
+    last_ticks_rear_right_ 	= encoder.ticks[3];
     return;
   }
 
-  int32_t delta_ticks_left = encoder.ticks_left.data - last_ticks_left_;
-  int32_t delta_ticks_right = encoder.ticks_right.data - last_ticks_right_;
+  int32_t delta_ticks_front_left 	= encoder.ticks_front_left.data - last_ticks_front_left_;
+  int32_t delta_ticks_front_right = encoder.ticks_front_right.data - last_ticks_front_right_;
+  int32_t delta_ticks_rear_left 	= encoder.ticks_rear_left.data - last_ticks_rear_left_;
+  int32_t delta_ticks_rear_right 	= encoder.ticks_rear_right.data - last_ticks_rear_right_;
 
   // calculo el desplazamiento relativo
 
-  double delta_left = M_PI * 2 * WHEEL_RADIUS * delta_ticks_left / ENCODER_TICKS;
-  double delta_right = M_PI * 2 * WHEEL_RADIUS * delta_ticks_right / ENCODER_TICKS;
+  double delta_front_left 	= M_PI * 2 * WHEEL_RADIUS * delta_ticks_front_left / ENCODER_TICKS;
+  double delta_front_right 	= M_PI * 2 * WHEEL_RADIUS * delta_ticks_front_right / ENCODER_TICKS;
+	double delta_rear_left 		= M_PI * 2 * WHEEL_RADIUS * delta_ticks_rear_left / ENCODER_TICKS;
+  double delta_rear_right 	= M_PI * 2 * WHEEL_RADIUS * delta_ticks_rear_right / ENCODER_TICKS;
 
-  double delta_theta = (delta_right - delta_left) / WHEEL_BASELINE;
-  double delta_distance = (delta_left + delta_right) / 2;
+  double delta_x = (delta_front_left+delta_front_right+delta_rear_left+delta_rear_left) * WHEEL_RADIUS/4;
+  double delta_y = (-delta_front_left+delta_front_right+delta_rear_left-delta_rear_left) * WHEEL_RADIUS/4;
+  double delta_theta = (-delta_front_left+delta_front_right-delta_rear_left+delta_rear_left) * WHEEL_RADIUS/(4*(LX+LY));
 
-  double delta_x = delta_distance * cos( theta_ );
-  double delta_y = delta_distance * sin( theta_ );
+  // double delta_theta 		= (delta_right - delta_left) / WHEEL_BASELINE;
+  // double delta_distance = (delta_left + delta_right) / 2;
 
-  double delta_t = (encoder.header.stamp - last_ticks_time).toSec();
+  // double delta_x = delta_distance * cos( theta_ );
+  // double delta_y = delta_distance * sin( theta_ );
+
+  // double delta_t = (encoder.header.stamp - last_ticks_time).toSec();
 
   // actualizo el estado local
 
-  ROS_DEBUG_STREAM("theta " << theta_);
-  ROS_DEBUG_STREAM("delta theta " << delta_theta);
+  // ROS_DEBUG_STREAM("theta " << theta_);
+  // ROS_DEBUG_STREAM("delta theta " << delta_theta);
 
   x_ += delta_x;
   y_ += delta_y;
@@ -96,7 +133,7 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::EncoderTicks& encode
   // normalizo el angulo
   //theta_ = wrapAngle( theta_ );
 
-  ROS_DEBUG_STREAM("theta " << theta_ << std::endl);
+  // ROS_DEBUG_STREAM("theta " << theta_ << std::endl);
 
   // Armo el mensaje de odometría
 
@@ -113,9 +150,12 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::EncoderTicks& encode
   msg.pose.pose.orientation = tf::createQuaternionMsgFromYaw(theta_);
   
   //msg.pose.covariance = ...
-
-  msg.twist.twist.linear.x = delta_distance / delta_t;
-  msg.twist.twist.linear.y = 0;
+	
+	double delta_t = (encoder.header.stamp - last_ticks_time).toSec();
+  
+  // NO ESTOY SEGURO SI ESTO ESTA BIEN
+  msg.twist.twist.linear.x = delta_x / delta_t;
+  msg.twist.twist.linear.y = delta_y / delta_t;
   msg.twist.twist.linear.z = 0;
 
   msg.twist.twist.angular.x = 0;
@@ -128,9 +168,12 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::EncoderTicks& encode
 
   // Actualizo las variables de estado
 
-  last_ticks_left_ = encoder.ticks_left.data;
-  last_ticks_right_ = encoder.ticks_right.data;
-  last_ticks_time = encoder.header.stamp;
+  last_ticks_front_left_ = encoder.ticks[0];
+	last_ticks_front_right_ = encoder.ticks[1];
+	last_ticks_rear_left_ = encoder.ticks[2];
+	last_ticks_rear_right_ = encoder.ticks[3];
+	last_ticks_time = encoder.header.stamp;
+
 
   /* Mando tambien un transform usando TF */
   tf::Transform t;
