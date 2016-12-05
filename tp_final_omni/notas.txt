@@ -1,4 +1,7 @@
 No se puede usar trajectory_waypoints pq usa otro tipo de trajectory messages
 
-TODO:
-Crear trayectoria cuadrada, sugiero usar trajector_generator en lazo_abierto_catedra
+TODO:  - Crear trayectoria cuadrada, sugiero usar trajector_generator en
+lazo_abierto_catedra 
+- Transformar puntos desde marco del laser al robot, en
+el codigo asume que son iguales, aunque ya hay algunas cosas como que sacar la transformada de laser desde /tf
+
