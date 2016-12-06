@@ -3,9 +3,9 @@
 #include "localizer.h"
 
 robmovil_ekf::Localizer::Localizer(ros::NodeHandle& n) :
-  u(2)
+  u(3) // u(2)
 {
-  u(1) = u(2) = 0;
+  u(1) = u(2) = u(3) = 0;
   set_map = true;
 
   // Get node parameters
@@ -16,7 +16,7 @@ robmovil_ekf::Localizer::Localizer(ros::NodeHandle& n) :
   n.param<bool>("only_prediction", only_prediction, false);
 
   landmark_sub = n.subscribe("/landmarks", 1, &Localizer::on_landmark_array, this);
-  imu_sub = n.subscribe("/imu", 1, &Localizer::on_imu, this);
+  // imu_sub = n.subscribe("/imu", 1, &Localizer::on_imu, this);
   odo_sub = n.subscribe("/robot/odometry", 1, &Localizer::on_odometry, this);
   pose_pub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("pose", 1);
   
@@ -125,16 +125,22 @@ void robmovil_ekf::Localizer::on_landmark_array(const robmovil_msgs::LandmarkArr
   prediction_timer.start();
 }
 
+/*
 void robmovil_ekf::Localizer::on_imu(const sensor_msgs::ImuConstPtr& msg)
 {
   u(2) = msg->angular_velocity.z;
   ROS_DEBUG_STREAM("Received angular velocity Z: " << u(2));
 }
+*/
 
 void robmovil_ekf::Localizer::on_odometry(const nav_msgs::OdometryConstPtr& msg)
 {
   u(1) = msg->twist.twist.linear.x;
   ROS_DEBUG_STREAM("Received linear velocity X: " << u(1));
+  u(2) = msg->twist.twist.linear.y;
+  ROS_DEBUG_STREAM("Received linear velocity Y: " << u(2));
+  u(3) = msg->twist.twist.angular.z;
+  ROS_DEBUG_STREAM("Received angular velocity Z: " << u(3));
 }
 
 void robmovil_ekf::Localizer::advance_time(const ros::Time& now)
