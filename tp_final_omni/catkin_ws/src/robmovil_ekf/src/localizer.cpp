@@ -6,6 +6,7 @@ robmovil_ekf::Localizer::Localizer(ros::NodeHandle& n) :
   u(3) // u(2)
 {
   u(1) = u(2) = u(3) = 0;
+  // Dejo esta var para que imprima la primera vez las posiciones de los posts
   set_map = true;
 
   // Get node parameters
@@ -19,6 +20,8 @@ robmovil_ekf::Localizer::Localizer(ros::NodeHandle& n) :
   // imu_sub = n.subscribe("/imu", 1, &Localizer::on_imu, this);
   odo_sub = n.subscribe("/robot/odometry", 1, &Localizer::on_odometry, this);
   pose_pub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("pose", 1);
+
+  posts_sub = n.subscribe("/posts", 1, &Localizer::on_posts_array, this);
   
   while( (t = ros::Time::now()) == ros::Time(0) ); // se espera por el primer mensaje de 'clock'
 
@@ -58,6 +61,33 @@ void robmovil_ekf::Localizer::prediction(const ros::Time& now)
   ROS_DEBUG_STREAM("Predicted covariance: " << P);
 }
 
+/* 
+geometry_msgs/Pose.msg
+Point position
+Quaternion orientation
+*/
+
+// Implementacion naive, no se si es prolija
+void robmovil_ekf::Localizer::on_posts_array(const geometry_msgs::PoseArrayConstPtr& msg)
+{
+  if (set_map)
+  {
+    std::vector<LocalizerEKF::Vector> map;
+    for (int i = 0; i < msg->poses.size(); i++)
+    {
+      LocalizerEKF::Vector p(2);
+      
+      p(1) = msg->poses[i].getX();
+      p(2) = msg->poses[i].getY();
+      map.push_back(p);
+    }
+
+    ekf.set_map(map);
+    set_map = false;
+  }
+  return;
+}
+
 void robmovil_ekf::Localizer::on_landmark_array(const robmovil_msgs::LandmarkArrayConstPtr& msg)
 {
   
@@ -66,8 +96,10 @@ void robmovil_ekf::Localizer::on_landmark_array(const robmovil_msgs::LandmarkArr
   
   ROS_DEBUG_STREAM("on_landmark_array: " << t);
 
+  
   /* Ante el primer update, tomo las poses de los postes y me las guardo como un mapa
    * Se asume que la pose actual del robot es tomada como origen de la localizacion */
+  /*
   if (set_map)
   {
     ROS_INFO("Creating map");
@@ -89,7 +121,7 @@ void robmovil_ekf::Localizer::on_landmark_array(const robmovil_msgs::LandmarkArr
     
     return;
   }
-  
+  */
   /* Se apaga el timer que predice periodicamente dado que
    * se predice y actualiza dadas las mediciones recibidas */
   prediction_timer.stop();

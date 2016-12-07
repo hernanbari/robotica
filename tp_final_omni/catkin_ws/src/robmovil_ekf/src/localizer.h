@@ -21,13 +21,16 @@ namespace robmovil_ekf {
       // void on_imu(const sensor_msgs::ImuConstPtr& msg);
       void on_odometry(const nav_msgs::OdometryConstPtr& msg);
 
+      void on_posts_array(const geometry_msgs::PoseArrayConstPtr& msg);
+
     private:
       LocalizerEKF ekf;
+      // Dejo esta var para que imprima la primera vez las posiciones de los posts
       bool set_map;
       bool only_prediction;
       
       //ros::Subscriber landmark_sub, imu_sub, odo_sub;
-      ros::Subscriber landmark_sub, odo_sub;
+      ros::Subscriber landmark_sub, odo_sub, posts_sub;
       ros::Publisher pose_pub;
       std::string base_frame_, map_frame_, laser_frame_;
       

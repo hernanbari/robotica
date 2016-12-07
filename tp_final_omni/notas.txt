@@ -3,4 +3,9 @@ No se puede usar trajectory_waypoints pq usa otro tipo de trajectory messages
 TODO:  
 - Crear trayectoria cuadrada, sugiero usar trajector_generator en
 lazo_abierto_catedra 
-- Checkear lo de /posts y los landmarks, no entiendo como se usan
+
+- Checkear lo de /posts y los landmarks, no entiendo como se usan, creo que es map_landmarks lo que hay que cambiar
+- Checkear set_map, no se si hay que dejarlo como está o crear transform_world_odom
+- Checkear que rol cumple odom en todo esto
+
+- Armar el model de sensado, movimiento, jacobianos, covarianzas, etc

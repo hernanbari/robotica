@@ -17,7 +17,8 @@ namespace robmovil_ekf
    * Localizador EKF
    *
    * Estado: X = (x,y,theta)
-   * Input: U = (v,w)
+   * //Input: U = (v,w)//
+   * Input: U = (vx, vy, w)
    * Medicion: Z = (r,rho)
    * Se incluyen dos ruidos aditivos para modelo de proceso y sensado, respectivamente
    */
@@ -72,6 +73,7 @@ namespace robmovil_ekf
 
       /* Mapa compuesto de landmarks en coordenadas cartesianas en referencia 
        * al lugar donde comenzo a funcionar el sistema */
+      // CREO QUE ESTE ES EL QUE DEBERIA SER FIJO USANDO /posts
       std::vector<tf::Point> map_landmarks;
       
       /* Delta tiempo desde la ultima prediccion (time update) */
