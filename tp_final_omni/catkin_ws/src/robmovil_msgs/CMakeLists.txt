@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   EncoderTicks.msg
+  MultiEncoderTicks.msg
   Trajectory.msg
   TrajectoryPoint.msg
   Landmark.msg

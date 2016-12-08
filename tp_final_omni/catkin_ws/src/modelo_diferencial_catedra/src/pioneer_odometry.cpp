@@ -56,15 +56,15 @@ void PioneerOdometry::on_velocity_cmd(const geometry_msgs::Twist& twist)
     vel_pub_front_left_.publish( msg );
   }
 
-  // publish right velocity
+  // publish front right velocity
   {
     std_msgs::Float64 msg;
-    msg.data = vFrontRight
+    msg.data = vFrontRight;
 
     vel_pub_front_right_.publish( msg );
   }
 
-  // publish right velocity
+  // publish rear left velocity
   {
     std_msgs::Float64 msg;
     msg.data = vRearLeft;
@@ -72,7 +72,7 @@ void PioneerOdometry::on_velocity_cmd(const geometry_msgs::Twist& twist)
     vel_pub_rear_left_.publish( msg );
   }
   
-  // publish right velocity
+  // publish rear right velocity
   {
     std_msgs::Float64 msg;
     msg.data = vRearRight;
@@ -82,7 +82,7 @@ void PioneerOdometry::on_velocity_cmd(const geometry_msgs::Twist& twist)
   
 }
 
-void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::EncoderTicks& encoder)
+void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::MultiEncoderTicks& encoder)
 {
   // La primera vez que llega un mensaje de encoders
   // inicializo las variables de estado.
@@ -90,17 +90,17 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::EncoderTicks& encode
     ticks_initialized_ = true;
     last_ticks_time = encoder.header.stamp;
     
-    last_ticks_front_left_ 	= encoder.ticks[0];
-    last_ticks_front_right_ = encoder.ticks[1];
-    last_ticks_rear_left_ 	= encoder.ticks[2];
-    last_ticks_rear_right_ 	= encoder.ticks[3];
+    last_ticks_front_left_ 	= encoder.ticks[0].data;
+    last_ticks_front_right_ = encoder.ticks[1].data;
+    last_ticks_rear_left_ 	= encoder.ticks[2].data;
+    last_ticks_rear_right_ 	= encoder.ticks[3].data;
     return;
   }
 
-  int32_t delta_ticks_front_left 	= encoder.ticks_front_left.data - last_ticks_front_left_;
-  int32_t delta_ticks_front_right = encoder.ticks_front_right.data - last_ticks_front_right_;
-  int32_t delta_ticks_rear_left 	= encoder.ticks_rear_left.data - last_ticks_rear_left_;
-  int32_t delta_ticks_rear_right 	= encoder.ticks_rear_right.data - last_ticks_rear_right_;
+  int32_t delta_ticks_front_left 	= encoder.ticks[0].data - last_ticks_front_left_;
+  int32_t delta_ticks_front_right = encoder.ticks[1].data - last_ticks_front_right_;
+  int32_t delta_ticks_rear_left 	= encoder.ticks[2].data - last_ticks_rear_left_;
+  int32_t delta_ticks_rear_right 	= encoder.ticks[3].data - last_ticks_rear_right_;
 
   // calculo el desplazamiento relativo
 
@@ -168,10 +168,10 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::EncoderTicks& encode
 
   // Actualizo las variables de estado
 
-  last_ticks_front_left_ = encoder.ticks[0];
-	last_ticks_front_right_ = encoder.ticks[1];
-	last_ticks_rear_left_ = encoder.ticks[2];
-	last_ticks_rear_right_ = encoder.ticks[3];
+  last_ticks_front_left_ = encoder.ticks[0].data;
+	last_ticks_front_right_ = encoder.ticks[1].data;
+	last_ticks_rear_left_ = encoder.ticks[2].data;
+	last_ticks_rear_right_ = encoder.ticks[3].data;
 	last_ticks_time = encoder.header.stamp;
 
 
