@@ -42,7 +42,7 @@ double lineal_interp(const ros::Time& t0, const ros::Time& t1, double y0, double
   return y0 + (t - t0).toSec() * (y1 - y0) / (t1 - t0).toSec();
 }
 
-bool KinematicPositionController::control(const ros::Time& t, double& vv, double& vy, double& w)
+bool KinematicPositionController::control(const ros::Time& t, double& vx, double& vy, double& w)
 {
   // Kinematic Position Control.
   // src: http://cs.gmu.edu/~kosecka/cs485/lec04-control.pdf
