@@ -53,7 +53,10 @@ void robmovil_ekf::LocalizerEKF::set_map(const std::vector<LocalizerEKF::Vector>
 {
   for (int i = 0; i < posts.size(); i++)
   {
-    tf::Point absolute_landmark = posts[i];
+    tf::Point absolute_landmark;
+    absolute_landmark.setX(posts[i](1));
+    absolute_landmark.setY(posts[i](2));
+    absolute_landmark.setZ(0);
 
     // LEER NOTAS.TXT, SI ESTO VA, SERÏA CON tranform_world_odom
     /*

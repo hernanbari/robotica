@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <robmovil_msgs/LandmarkArray.h>
 // #include <sensor_msgs/Imu.h>
+#include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf2_ros/transform_broadcaster.h>

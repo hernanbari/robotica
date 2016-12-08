@@ -77,8 +77,8 @@ void robmovil_ekf::Localizer::on_posts_array(const geometry_msgs::PoseArrayConst
     {
       LocalizerEKF::Vector p(2);
       
-      p(1) = msg->poses[i].getX();
-      p(2) = msg->poses[i].getY();
+      p(1) = msg->poses[i].position.x;
+      p(2) = msg->poses[i].position.y;
       map.push_back(p);
     }
 
