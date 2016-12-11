@@ -15,3 +15,6 @@ lazo_abierto_catedra
 
 - Armar el model de sensado, movimiento, jacobianos, covarianzas, etc
 	- makeA/makeBaseA y makeProcess deberían estar bien, siguen el tp3
+
+
+- Acordarse de publicar tf map->base_link_ekf (lo pide enunciado)
