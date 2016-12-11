@@ -4,8 +4,14 @@ TODO:
 - Crear trayectoria cuadrada, sugiero usar trajector_generator en
 lazo_abierto_catedra 
 
+- Checkear formulas de odometria, nunca uso que da 500 vueltas la resolucion del encoder
+
+- Checkear front_laser transform, no se si hay que inicializarlo en el launch con disitnots params
+
 - Checkear lo de /posts y los landmarks, no entiendo como se usan, creo que es map_landmarks lo que hay que cambiar
 - Checkear set_map, no se si hay que dejarlo como está o crear transform_world_odom
 - Checkear que rol cumple odom en todo esto
+- -> CONFIRMADO QUE HAY UN ERROR, MAP_LANDMARKS NO COINCIDE CON SET_MEASURE/FIND_CORRESPONDING_LANDMARK
 
 - Armar el model de sensado, movimiento, jacobianos, covarianzas, etc
+	- makeA/makeBaseA y makeProcess deberían estar bien, siguen el tp3
