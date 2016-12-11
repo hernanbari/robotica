@@ -6,15 +6,17 @@ lazo_abierto_catedra
 
 - Checkear formulas de odometria, nunca uso que da 500 vueltas la resolucion del encoder
 
-- Checkear front_laser transform, no se si hay que inicializarlo en el launch con disitnots params
 
-- Checkear lo de /posts y los landmarks, no entiendo como se usan, creo que es map_landmarks lo que hay que cambiar
-- Checkear set_map, no se si hay que dejarlo como está o crear transform_world_odom
+- Checkear front_laser transform, no se si hay que inicializarlo en el launch con disitnots params
 - Checkear que rol cumple odom en todo esto
-- -> CONFIRMADO QUE HAY UN ERROR, MAP_LANDMARKS NO COINCIDE CON SET_MEASURE/FIND_CORRESPONDING_LANDMARK
+- Checkear set_map
+- -> CONFIRMADO QUE HAY UN ERROR EXTRAÑO, EL POINTCLOUD DE RVIZ DE GT NO COINCIDE CON EL BASE_LINK_EKF
+ 	-> EXTRAÑO PQ EL Q ESTA BIEN ES EL DE BASE_LINK_EKF
+ 	-> IGUALMENTE, EL FRAME DE BASE_LINK_EKF ESTÄ MAL, ESTA DESFASADO, PERO EL DE ODOM ESTA BIEN (PQ USA ODOMETRIA)
 
 - Armar el model de sensado, movimiento, jacobianos, covarianzas, etc
 	- makeA/makeBaseA y makeProcess deberían estar bien, siguen el tp3
+	- el modelo de sensado debería ser el mismo que antes creo -> checkear
 
 
 - Acordarse de publicar tf map->base_link_ekf (lo pide enunciado)
