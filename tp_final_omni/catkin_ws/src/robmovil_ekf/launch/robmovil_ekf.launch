@@ -27,7 +27,7 @@
 
   <node pkg="modelo_diferencial_catedra" type="pioneer_odometry" name="pioneer_odometry" output="screen"/>
 
-  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_laser" args="0 0 0 0 0 0 base_link laser" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_laser" args="0 0 0 0 0 0 base_link front_laser" />
 
   <node pkg="robmovil_ekf" type="localizer" name="localizer" output="screen" >
     <param name="only_prediction" type="bool" value="false"/>

@@ -12,7 +12,7 @@ robmovil_ekf::Localizer::Localizer(ros::NodeHandle& n) :
   // Get node parameters
   n.param<std::string>("base_link_frame", base_frame_, "base_link_ekf");
   n.param<std::string>("ekf_frame", map_frame_, "odom");
-  n.param<std::string>("laser_frame", laser_frame_, "laser");
+  n.param<std::string>("laser_frame", laser_frame_, "front_laser");
   
   n.param<bool>("only_prediction", only_prediction, false);
 

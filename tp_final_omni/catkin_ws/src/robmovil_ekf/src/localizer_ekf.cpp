@@ -75,6 +75,7 @@ void robmovil_ekf::LocalizerEKF::set_map(const std::vector<LocalizerEKF::Vector>
     map_landmarks.push_back(relative_landmark);
     */
     map_landmarks.push_back(absolute_landmark);
+    ROS_DEBUG_STREAM("Landmark: " << absolute_landmark.getX() << "," << absolute_landmark.getY() << "," << absolute_landmark.getZ());
     
   }
 }
@@ -128,9 +129,15 @@ void robmovil_ekf::LocalizerEKF::makeA(void)
   /* COMPLETAR: Utilizando variables globales x, u y delta_t */
   
   // u(2) AHORA ES u(3), PERO CREO QUE HAY QUE CAMBIAR TODO A
+  /*
   A(1,3) = -sin(x(3))*u(2)*delta_t;
   A(2,3) = cos(x(3))*u(2)*delta_t;
-  
+  */
+
+	// SEGUN EL TP3:
+	A(1,3) = -u(1)*sin(x(3))*delta_t-u(2)*cos(x(3))*delta_t;
+  A(2,3) = u(1)*cos(x(3))*delta_t-u(2)*sin(x(3))*delta_t;
+
   ROS_DEBUG_STREAM("A: " << std::endl << A);
 }
 
@@ -261,8 +268,9 @@ void robmovil_ekf::LocalizerEKF::makeBaseR()
  *  
  *  Se debe utilizar el estado anterior y la entrada del modelo de movimiento
  *  para definir (predecir) la variable x */
-void robmovil_ekf::LocalizerEKF::makeProcess(void)
+void robmovil_ekf::LocalizerEKF::makeProcess()
 {
+
   /* COMPLETAR: Utilizar las variables globales x_t-1, u y delta_t 
    * para predecir el estado siguiente (prior state estimate).
    * 
@@ -277,9 +285,10 @@ void robmovil_ekf::LocalizerEKF::makeProcess(void)
   x(3) = angles::normalize_angle(x_old(3)+delta_t*u(2));
   */
 
-  x(1) = x_old(1)+u(1)*delta_t;
-  x(2) = x_old(2)+u(2)*delta_t;
-  x(3) = angles::normalize_angle(x_old(3)+delta_t*u(3));
+  // SEGUN EL TP3:
+  x(1) = x_old(1)+u(1)*cos(x_old(3))*delta_t-u(2)*sin(x_old(3))*delta_t;
+  x(2) = x_old(2)+u(2)*sin(x_old(3))*delta_t+u(2)*cos(x_old(3))*delta_t;
+  x(3) = angles::normalize_angle(x_old(3)+u(3)*delta_t);
 
   ROS_DEBUG_STREAM("Process model:" << std::endl << "X_t-1: " << x_old << std::endl << "X_t: " << x << std::endl << "delta_t: " << delta_t);
 }

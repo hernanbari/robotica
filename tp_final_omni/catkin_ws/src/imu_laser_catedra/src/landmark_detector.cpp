@@ -17,7 +17,7 @@ robmovil_ekf::LandmarkDetector::LandmarkDetector(ros::NodeHandle& _n) :
 
   n.param("robot_frame", robot_frame, std::string("base_link"));
   n.param("publish_robot_frame", publish_robot_frame, std::string("base_link"));
-  n.param("laser_frame", laser_frame, std::string("laser"));
+  n.param("laser_frame", laser_frame, std::string("front_laser"));
 
   ROS_INFO_STREAM("publishing to frame " << publish_robot_frame);
 }
@@ -111,11 +111,11 @@ void robmovil_ekf::LandmarkDetector::on_laser_scan(const sensor_msgs::LaserScanC
 
 bool robmovil_ekf::LandmarkDetector::update_laser_tf(const ros::Time& required_time)
 {
-  if (!listener->waitForTransform(laser_frame, robot_frame, required_time, ros::Duration(1)))
+  if (!listener->waitForTransform(robot_frame, laser_frame, required_time, ros::Duration(1)))
     return false;
   else
   {
-    listener->lookupTransform(laser_frame, robot_frame, ros::Time(0), laser_transform);
+    listener->lookupTransform(robot_frame, laser_frame, ros::Time(0), laser_transform);
     return true;
   }
 }
