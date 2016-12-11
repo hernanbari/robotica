@@ -42,13 +42,18 @@ void PioneerOdometry::on_velocity_cmd(const geometry_msgs::Twist& twist)
   double xLinearVel = twist.linear.x;
   double yLinearVel = twist.linear.y;
   double angularVel = twist.angular.z;
+
+  ROS_DEBUG_STREAM("xLinearVel: " << xLinearVel << "    yLinearVel: " << yLinearVel << "    angularVel: " << angularVel << std::endl);
+
   
-  double vFrontLeft 	= (1/WHEEL_RADIUS) * (xLinearVel-yLinearVel-(LX+LY)*angularVel);
-  double vFrontRight 	= (1/WHEEL_RADIUS) * (xLinearVel+yLinearVel+(LX+LY)*angularVel);
-  double vRearLeft 		= (1/WHEEL_RADIUS) * (xLinearVel+yLinearVel-(LX+LY)*angularVel);
-  double vRearRight 	= (1/WHEEL_RADIUS) * (xLinearVel-yLinearVel+(LX+LY)*angularVel);
+  double vFrontLeft 	= (1/WHEEL_RADIUS) * (xLinearVel - yLinearVel - (LX+LY) * angularVel);
+  double vFrontRight 	= (1/WHEEL_RADIUS) * (xLinearVel + yLinearVel + (LX+LY) * angularVel);
+  double vRearLeft 		= (1/WHEEL_RADIUS) * (xLinearVel + yLinearVel - (LX+LY) * angularVel);
+  double vRearRight 	= (1/WHEEL_RADIUS) * (xLinearVel - yLinearVel + (LX+LY) * angularVel);
 
   // publish front left velocity
+  ROS_DEBUG_STREAM("vFrontLeft: " << vFrontLeft << "    vFrontRight: " << vFrontRight << "    vRearLeft: " << vRearLeft << "    vRearRight: " << vFrontRight << std::endl);
+  
   {
     std_msgs::Float64 msg;
     msg.data = vFrontLeft;
@@ -102,22 +107,36 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::MultiEncoderTicks& e
   int32_t delta_ticks_rear_left 	= encoder.ticks[2].data - last_ticks_rear_left_;
   int32_t delta_ticks_rear_right 	= encoder.ticks[3].data - last_ticks_rear_right_;
 
+  // CHECKEAR FORMULAS, SI PONES VEL_X = 0.1, ODOMETRY DA 0.13, VEL_ANG = 0.3, ODOM = 0.4
+  // PUEDE SER QUE SEA UN ERROR ACEPTABLE/ESPERABLE O TAL VEA HAY ALGO MAL
+  // NUNCA USO QUE EL ENCODER DA 500 VUELTAS
+
+  double delta_front_left 	= delta_ticks_front_left  * (M_PI/180);
+  double delta_front_right 	= delta_ticks_front_right * (M_PI/180);
+	double delta_rear_left 		= delta_ticks_rear_left   * (M_PI/180);
+  double delta_rear_right 	= delta_ticks_rear_right  * (M_PI/180);
+
+  double delta_t = (encoder.header.stamp - last_ticks_time).toSec();
+
+  double vel_x      = ( delta_front_left + delta_front_right + delta_rear_left + delta_rear_right) * WHEEL_RADIUS/4            / delta_t;
+  double vel_y      = (-delta_front_left + delta_front_right + delta_rear_left - delta_rear_right) * WHEEL_RADIUS/4            / delta_t;
+  double vel_theta  = (-delta_front_left + delta_front_right - delta_rear_left + delta_rear_right) * WHEEL_RADIUS/(4*(LX+LY))  / delta_t;
+
+  double robot_dir = atan2(vel_y, vel_x);
+  double robot_vel = pow(pow(vel_x,2) + pow(vel_y,2), 0.5);
+
+  // CHECKEAR TODO ESTO DE ABAJO, LAS FORMULAS DE ARRIBA ESTAN BIEN; EL TEMA ES CÖMO SE USAN
   // calculo el desplazamiento relativo
-
-  double delta_front_left 	= M_PI * 2 * WHEEL_RADIUS * delta_ticks_front_left / ENCODER_TICKS;
-  double delta_front_right 	= M_PI * 2 * WHEEL_RADIUS * delta_ticks_front_right / ENCODER_TICKS;
-	double delta_rear_left 		= M_PI * 2 * WHEEL_RADIUS * delta_ticks_rear_left / ENCODER_TICKS;
-  double delta_rear_right 	= M_PI * 2 * WHEEL_RADIUS * delta_ticks_rear_right / ENCODER_TICKS;
-
-  double delta_x = (delta_front_left+delta_front_right+delta_rear_left+delta_rear_left) * WHEEL_RADIUS/4;
-  double delta_y = (-delta_front_left+delta_front_right+delta_rear_left-delta_rear_left) * WHEEL_RADIUS/4;
-  double delta_theta = (-delta_front_left+delta_front_right-delta_rear_left+delta_rear_left) * WHEEL_RADIUS/(4*(LX+LY));
+  double delta_distance = robot_vel*delta_t;
 
   // double delta_theta 		= (delta_right - delta_left) / WHEEL_BASELINE;
   // double delta_distance = (delta_left + delta_right) / 2;
 
-  // double delta_x = delta_distance * cos( theta_ );
-  // double delta_y = delta_distance * sin( theta_ );
+  // ESTA FORMULA LA HICE QUEMADO; PARECE FUNCIONAR PERO NI IDEA POR QUE
+  // MAS QUE NADA LA SUMA DE LOS ANGULOS, FUE MAGIA PROBANDO,
+  // AL PPIO ERA COS (ALGUNO DE LOS ANGULOS), DESPUES COS * COS
+  double delta_x = delta_distance * cos( robot_dir + theta_);
+  double delta_y = delta_distance * sin( robot_dir + theta_);
 
   // double delta_t = (encoder.header.stamp - last_ticks_time).toSec();
 
@@ -126,12 +145,15 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::MultiEncoderTicks& e
   // ROS_DEBUG_STREAM("theta " << theta_);
   // ROS_DEBUG_STREAM("delta theta " << delta_theta);
 
-  x_ += delta_x;
-  y_ += delta_y;
-  theta_ += delta_theta;
+  x_      += delta_x;
+  y_      += delta_y;
+  theta_  += vel_theta * delta_t;
 
   // normalizo el angulo
   //theta_ = wrapAngle( theta_ );
+
+  // ROS_INFO_STREAM("x: " << x_ << "    y: " << y_ << "    theta: " << theta_ << std::endl);
+  // ROS_INFO_STREAM("delta_x: " << delta_x << "    delta_y: " << delta_y << std::endl);
 
   // ROS_DEBUG_STREAM("theta " << theta_ << std::endl);
 
@@ -151,18 +173,18 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::MultiEncoderTicks& e
   
   //msg.pose.covariance = ...
 	
-	double delta_t = (encoder.header.stamp - last_ticks_time).toSec();
-  
   // NO ESTOY SEGURO SI ESTO ESTA BIEN
-  msg.twist.twist.linear.x = delta_x / delta_t;
-  msg.twist.twist.linear.y = delta_y / delta_t;
+  msg.twist.twist.linear.x = vel_x;
+  msg.twist.twist.linear.y = vel_y;
   msg.twist.twist.linear.z = 0;
 
   msg.twist.twist.angular.x = 0;
   msg.twist.twist.angular.y = 0;
-  msg.twist.twist.angular.z = delta_theta / delta_t;
+  msg.twist.twist.angular.z = vel_theta;
 
   //msg.twist.covariance = ...
+
+  ROS_DEBUG_STREAM("vel_x: " << msg.twist.twist.linear.x << "    vel_y: " << msg.twist.twist.linear.y << "    vel_theta: " << msg.twist.twist.angular.z << std::endl);
 
   pub_odometry_.publish( msg );
 
