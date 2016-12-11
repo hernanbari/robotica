@@ -34,7 +34,7 @@ KinematicPositionController::KinematicPositionController(ros::NodeHandle& nh) :
 // CHECKEAR VALORES, K_RHO EN DIFERENCIAL ERA 0.4
 #define K_RHO 0.2
 #define K_SIGMA 0.2
-#define K_ALPHA 0.7
+#define K_ALPHA 0.2
 #define K_BETA -0.1
 
 double lineal_interp(const ros::Time& t0, const ros::Time& t1, double y0, double y1, const ros::Time& t)
@@ -76,9 +76,12 @@ bool KinematicPositionController::control(const ros::Time& t, double& vx, double
   double beta =  angles::normalize_angle(-theta_siegwart - alpha);
 
   // use the control law to compute velocity commands.
-  vx = K_RHO * rho;
-  vy = K_SIGMA * sigma;
-  w = K_ALPHA * alpha + K_BETA * beta;
+  // EN DIFERENCIAL ESTO ES MUCHO MAS COMPLEJO, PERO CREO QUE ESTO ESTA BIEN
+  // A SIMPLE VISTA (EN VREP) FUNCIONA
+  vx = K_RHO * dx;
+  vy = K_SIGMA * dy;
+  w = K_ALPHA * theta_siegwart;
+  // w = K_ALPHA * alpha + K_BETA * beta;
 
   ROS_INFO_STREAM("atan2: " << atan2(dy, dx) << " theta siegwart: " << theta_siegwart << " expected_atheta: "  << current_a << " rho: " << rho << " sigma: " << sigma << " alpha: " << alpha << " beta: " << beta << " vx: " << vx << " vy: " << vy << " w: " << w);
 
