@@ -72,13 +72,22 @@ void robmovil_ekf::Localizer::on_posts_array(const geometry_msgs::PoseArrayConst
 {
   if (set_map)
   {
-    std::vector<LocalizerEKF::Vector> map;
+    std::vector<tf::Vector3> map;
+    
+
+    if(!listener2.waitForTransform("map", "odom", msg->header.stamp, ros::Duration(1)))
+    {
+      ROS_WARN_STREAM("map" << " -> " << "odom" << " transform not yet received, not publishing landmarks");
+    }
+    else
+    {
+      listener2.lookupTransform("map", "odom", ros::Time(0), map_transform);
+    }
+
     for (int i = 0; i < msg->poses.size(); i++)
     {
-      LocalizerEKF::Vector p(2);
-      
-      p(1) = msg->poses[i].position.x;
-      p(2) = msg->poses[i].position.y;
+      tf::Vector3 p(msg->poses[i].position.x, msg->poses[i].position.y, 0);
+      p = map_transform * p;
       map.push_back(p);
     }
 

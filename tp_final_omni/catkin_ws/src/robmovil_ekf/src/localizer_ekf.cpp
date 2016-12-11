@@ -49,34 +49,19 @@ robmovil_ekf::LocalizerEKF::LocalizerEKF(void) : EKFilter(3, 2, 3, 2, 2)
 }
 */
 
-void robmovil_ekf::LocalizerEKF::set_map(const std::vector<LocalizerEKF::Vector>& posts)
+void robmovil_ekf::LocalizerEKF::set_map(const std::vector<tf::Vector3>& posts)
 {
   for (int i = 0; i < posts.size(); i++)
   {
-    tf::Point absolute_landmark;
-    absolute_landmark.setX(posts[i](1));
-    absolute_landmark.setY(posts[i](2));
-    absolute_landmark.setZ(0);
+    tf::Point relative_landmark;
+    relative_landmark.setX(posts[i].getX());
+    relative_landmark.setY(posts[i].getY());
+    relative_landmark.setZ(0);
 
-    // LEER NOTAS.TXT, SI ESTO VA, SERÏA CON tranform_world_odom
-    /*
-    // Transformacion para convertir coordenadas en referencia del robot a referencia del mundo 
-    tf::Transform transform_world_robot;
-    transform_world_robot.setOrigin( robot_position );
-    transform_world_robot.setRotation( tf::createQuaternionFromYaw( robot_orientation ) );
-    // Obtener las coordenadas de absolute_landmark con respecto al robot 
-    tf::Transform transform_robot_world = transform_world_robot.inverse();
-    tf::Point relative_landmark = transform_robot_world(absolute_landmark);
-
-    ROS_DEBUG_STREAM("Absolute_landmark: " << absolute_landmark.getX() << "," << absolute_landmark.getY() << "," << absolute_landmark.getZ());
-    // Coordenadas cartesianas del landmark con respecto al robot
-    ROS_DEBUG_STREAM("Relative_landmark: " << relative_landmark.getX() << " " << relative_landmark.getY() << " " << relative_landmark.getZ());
-
+  
     map_landmarks.push_back(relative_landmark);
-    */
-    map_landmarks.push_back(absolute_landmark);
-    ROS_DEBUG_STREAM("Landmark: " << absolute_landmark.getX() << "," << absolute_landmark.getY() << "," << absolute_landmark.getZ());
-    
+    ROS_DEBUG_STREAM("Relative landmark: " << relative_landmark.getX() << "," << relative_landmark.getY() << "," << relative_landmark.getZ());
+        
   }
 }
 

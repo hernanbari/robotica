@@ -111,11 +111,11 @@ void robmovil_ekf::LandmarkDetector::on_laser_scan(const sensor_msgs::LaserScanC
 
 bool robmovil_ekf::LandmarkDetector::update_laser_tf(const ros::Time& required_time)
 {
-  if (!listener->waitForTransform(robot_frame, laser_frame, required_time, ros::Duration(1)))
+  if (!listener->waitForTransform(laser_frame, robot_frame, required_time, ros::Duration(1)))
     return false;
   else
   {
-    listener->lookupTransform(robot_frame, laser_frame, ros::Time(0), laser_transform);
+    listener->lookupTransform(laser_frame, robot_frame, ros::Time(0), laser_transform);
     return true;
   }
 }

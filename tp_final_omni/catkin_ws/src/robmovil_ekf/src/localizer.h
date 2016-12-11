@@ -9,6 +9,7 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2/LinearMath/Transform.h>
+#include <tf/transform_listener.h>
 
 #include "localizer_ekf.h"
 
@@ -36,7 +37,12 @@ namespace robmovil_ekf {
       std::string base_frame_, map_frame_, laser_frame_;
       
       ros::Timer prediction_timer;
-      tf2_ros::TransformBroadcaster transform_broadcaster_;
+      tf2_ros::TransformBroadcaster transform_broadcaster_;  
+
+
+      tf::TransformListener listener2;
+      tf::StampedTransform map_transform;
+
       
       void prediction_event(const ros::TimerEvent& event);
       void advance_time(const ros::Time& now);
