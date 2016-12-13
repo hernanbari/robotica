@@ -78,13 +78,13 @@ bool KinematicPositionController::control(const ros::Time& t, double& vx, double
   // use the control law to compute velocity commands.
   // EN DIFERENCIAL ESTO ES MUCHO MAS COMPLEJO, PERO CREO QUE ESTO ESTA BIEN
   // A SIMPLE VISTA (EN VREP) FUNCIONA
-  vx = K_RHO * dx;
-  vy = K_SIGMA * dy;
-  w = K_ALPHA * theta_siegwart;
-  // w = K_ALPHA * alpha + K_BETA * beta;
+  vx = K_RHO * dx_rot;
+  vy = K_SIGMA * dy_rot;
+  //w = K_ALPHA * angles::normalize_angle(theta_siegwart);
+  w = K_ALPHA * alpha + K_BETA * beta;
 
-  ROS_INFO_STREAM("atan2: " << atan2(dy, dx) << " theta siegwart: " << theta_siegwart << " expected_atheta: "  << current_a << " rho: " << rho << " sigma: " << sigma << " alpha: " << alpha << " beta: " << beta << " vx: " << vx << " vy: " << vy << " w: " << w);
-
+  // ROS_INFO_STREAM("atan2: " << atan2(dy, dx) << " theta siegwart: " << theta_siegwart << " expected_atheta: "  << current_a << " rho: " << rho << " sigma: " << sigma << " alpha: " << alpha << " beta: " << beta << " vx: " << vx << " vy: " << vy << " w: " << w);
+  ROS_INFO_STREAM("vx: " << vx << " vy: " << vy << " w: " << w);
   return true;
 }
 
