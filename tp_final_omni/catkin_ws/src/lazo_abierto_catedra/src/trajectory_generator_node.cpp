@@ -7,6 +7,7 @@
 #include <tf/tf.h>
 
 void build_sin_trajectory(double, double, double, double, robmovil_msgs::Trajectory&, nav_msgs::Path&);
+void build_box_trajectory(double, double, robmovil_msgs::Trajectory&, nav_msgs::Path&);
 
 int main(int argc, char** argv)
 {
@@ -39,14 +40,74 @@ int main(int argc, char** argv)
   nhp.param<double>("amplitude", amplitude, 1);
   nhp.param<double>("cycles", cycles, 1);
   
-  build_sin_trajectory(stepping, total_time, amplitude, cycles, trajectory_msg, path_msg);
+  // build_sin_trajectory(stepping, total_time, amplitude, cycles, trajectory_msg, path_msg);
 
+  build_box_trajectory(stepping, total_time, trajectory_msg, path_msg);
   trajectory_publisher.publish( trajectory_msg );
   path_publisher.publish( path_msg );
 
   ros::spin();
 
   return 0;
+}
+
+void build_box_trajectory(double stepping, double total_time, robmovil_msgs::Trajectory& trajectory_msg, nav_msgs::Path& path_msg)
+{
+  // Estaria bueno esto de hacerlo en funcion del tiempo, pero paja
+  /*
+  for (double t = 0; t <= total_time; t = t + stepping)
+  {
+  
+  }
+  */
+
+  double x[] = {0, 0, -2, -2, 0};
+  double y[] = {0, -2, -2, 0, 0};
+  // Cómo hago para que siempre este orientado hacia afuera?
+  // Supuse que con angulos negativos deberia andar
+  double a[] = {0, -90.0, -180.0, -270.0, -0.0};
+
+  // Ni idea estas velocidades, tire random
+  double vx = 0.1;
+  double vy = 0.1;
+  double va = 1.0;
+
+  for (double t = 0; t <= 4; t = t + 1)
+  {
+
+    robmovil_msgs::TrajectoryPoint point_msg;
+
+    point_msg.time_from_start = ros::Duration( t*5.0 );
+
+    point_msg.transform.translation.x = x[int(t)];
+    point_msg.transform.translation.y = y[int(t)];
+    point_msg.transform.translation.z = 0;
+
+    point_msg.transform.rotation = tf::createQuaternionMsgFromYaw( 0.0 ); //a[int(t)] );
+
+    point_msg.velocity.linear.x = vx;
+    point_msg.velocity.linear.y = vy;
+    point_msg.velocity.linear.z = 0;
+
+    point_msg.velocity.angular.x = 0;
+    point_msg.velocity.angular.y = 0;
+    point_msg.velocity.angular.z = 1.0; //va;
+
+    trajectory_msg.points.push_back( point_msg );
+    
+    geometry_msgs::PoseStamped stamped_pose_msg;
+    
+    stamped_pose_msg.header.stamp = path_msg.header.stamp;
+    stamped_pose_msg.header.frame_id = path_msg.header.frame_id;
+    
+    stamped_pose_msg.pose.position.x = x[int(t)];
+    stamped_pose_msg.pose.position.y = y[int(t)];
+    stamped_pose_msg.pose.position.z = 0;
+    
+    stamped_pose_msg.pose.orientation = tf::createQuaternionMsgFromYaw( 0.0 ); //a[int(t)]);
+    
+    path_msg.poses.push_back(stamped_pose_msg);
+  }
 }
 
 void build_sin_trajectory(double stepping, double total_time, double amplitude, double cycles, robmovil_msgs::Trajectory& trajectory_msg, nav_msgs::Path& path_msg)
