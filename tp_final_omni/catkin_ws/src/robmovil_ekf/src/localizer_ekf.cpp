@@ -357,7 +357,7 @@ tf::Point robmovil_ekf::LocalizerEKF::measure2landmark(const LocalizerEKF::Vecto
   predicted_landmark.setX(rho*cos(absolute_angle)+robot_x);
   predicted_landmark.setY(rho*sin(absolute_angle)+robot_y);
   predicted_landmark.setZ(0);
-
+  ROS_DEBUG_STREAM("robot_x " << robot_x << " robot_y " << robot_y << " robot_theta " << robot_theta << " rho " << rho << " phi " << phi << std::endl);
   return predicted_landmark;
 }
 

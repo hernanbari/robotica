@@ -30,6 +30,17 @@
   <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_laser" args="0 0 0 0 0 0 base_link front_laser" />
 
   <node pkg="robmovil_ekf" type="localizer" name="localizer" output="screen" >
-    <param name="only_prediction" type="bool" value="false"/>
+    <param name="only_prediction" type="bool" value="true"/>
   </node>
+
+  <node pkg="lazo_abierto_catedra" type="trajectory_generator" name="trajectory_generator" output="screen" >
+  </node>
+
+  <node pkg="lazo_cerrado_catedra" type="trajectory_follower" name="trajectory_follower" output="screen" >
+    <param name="goal_selection" type="str" value="FIXED_GOAL"/>
+    
+    <param name="fixed_goal_x" type="double" value="0"/>
+    <param name="fixed_goal_y" type="double" value="0"/>
+    <param name="fixed_goal_a" type="double" value="0"/> <!-- -3/2 * PI -->
+  </node>  
 </launch>

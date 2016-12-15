@@ -84,7 +84,7 @@ void robmovil_ekf::LandmarkDetector::on_laser_scan(const sensor_msgs::LaserScanC
 
     /* convierto el centroide a coordenadas del robot */
     centroid = laser_transform * centroid;
-    //ROS_INFO_STREAM("landmark detectado (en coordenadas del robot): " << centroid.getX() << " " << centroid.getY() << " " << centroid.getZ());
+    ROS_INFO_STREAM("landmark detectado (en coordenadas del robot): " << centroid.getX() << " " << centroid.getY() << " " << centroid.getZ());
 
     centroids.push_back(centroid);
 
@@ -97,7 +97,7 @@ void robmovil_ekf::LandmarkDetector::on_laser_scan(const sensor_msgs::LaserScanC
 
     /* se agrega el landmark en coordenadas polares */
     landmark_array.landmarks.push_back(landmark);
-    //ROS_INFO_STREAM("landmark detectado (polares): " << i << ": " << landmark.range << " " << landmark.bearing);
+    ROS_INFO_STREAM("landmark detectado (polares): " << i << ": " << landmark.range << " " << landmark.bearing);
 
     /* empiezo a procesar un nuevo landmark */
     landmark_points.clear();
@@ -111,6 +111,7 @@ void robmovil_ekf::LandmarkDetector::on_laser_scan(const sensor_msgs::LaserScanC
 
 bool robmovil_ekf::LandmarkDetector::update_laser_tf(const ros::Time& required_time)
 {
+  ROS_INFO_STREAM("robot_frame "<< robot_frame << std::endl);
   if (!listener->waitForTransform(laser_frame, robot_frame, required_time, ros::Duration(1)))
     return false;
   else
