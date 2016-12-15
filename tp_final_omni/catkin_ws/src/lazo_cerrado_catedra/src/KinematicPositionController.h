@@ -22,6 +22,12 @@ class KinematicPositionController : public TrajectoryFollower
     tf2_ros::TransformListener transform_listener_;
     ros::Publisher expected_position_pub;
     
+    int goals_achieved_;
+    int first;
+    double last_goal_x = 0;
+    double last_goal_y = -2;
+    double last_goal_a = 0;
+    
     GoalSelectionType goal_selection_;
     
     double fixed_goal_x_;

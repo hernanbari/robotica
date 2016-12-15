@@ -13,7 +13,10 @@ KinematicPositionController::KinematicPositionController(ros::NodeHandle& nh) :
     nhp.param<std::string>("goal_selection", goal_selection, "TIME_BASED");
     nhp.param<double>("fixed_goal_x", fixed_goal_x_, 3);     
     nhp.param<double>("fixed_goal_y", fixed_goal_y_, 0);     
-    nhp.param<double>("fixed_goal_a", fixed_goal_a_, -M_PI_2);     
+    nhp.param<double>("fixed_goal_a", fixed_goal_a_, -M_PI_2);
+
+    first = 1;
+    goals_achieved_ = 0;     
     
     if(goal_selection == "TIME_BASED")
       goal_selection_ = TIME_BASED;
@@ -81,7 +84,7 @@ bool KinematicPositionController::control(const ros::Time& t, double& vx, double
   vx = K_RHO * dx_rot;
   vy = K_SIGMA * dy_rot;
   //w = K_ALPHA * angles::normalize_angle(theta_siegwart);
-  w = K_ALPHA * alpha + K_BETA * beta;
+  w = K_ALPHA * angles::normalize_angle(theta_siegwart);// alpha + K_BETA * beta;
 
   // ROS_INFO_STREAM("atan2: " << atan2(dy, dx) << " theta siegwart: " << theta_siegwart << " expected_atheta: "  << current_a << " rho: " << rho << " sigma: " << sigma << " alpha: " << alpha << " beta: " << beta << " vx: " << vx << " vy: " << vy << " w: " << w);
   ROS_INFO_STREAM("vx: " << vx << " vy: " << vy << " w: " << w);
@@ -112,7 +115,41 @@ bool KinematicPositionController::getPursuitBasedGoal(const ros::Time& t, double
     return true;
    
   const robmovil_msgs::Trajectory& trajectory = getTrajectory();
-  
+
+  /*
+  if (first == 1)
+  {
+    x = trajectory.points[0].transform.translation.x;
+    y = trajectory.points[0].transform.translation.y;
+    a = tf2::getYaw(trajectory.points[0].transform.rotation);
+    
+    first = 0;
+    return true;
+  }
+  */
+  if (dist2(current_x,current_y, last_goal_x, last_goal_y) > 0.1){
+    x = last_goal_x;
+    y = last_goal_y;
+    a = last_goal_a;
+    return true;
+  }
+  if (goals_achieved_ == 3)
+  {
+    goals_achieved_ = 0;
+  }
+  else
+  {
+    goals_achieved_ += 1;
+  }
+  x = trajectory.points[goals_achieved_].transform.translation.x;
+  y = trajectory.points[goals_achieved_].transform.translation.y;
+  a = tf2::getYaw(trajectory.points[goals_achieved_].transform.rotation);
+  last_goal_x = x;
+  last_goal_y = y;
+  last_goal_a = a;
+  return true;
+
+
   // Si nos encontramos "cerca" del final, se establece el ultimo wpoint como goal
   const robmovil_msgs::TrajectoryPoint& last_wpoint = trajectory.points.back(); 
   

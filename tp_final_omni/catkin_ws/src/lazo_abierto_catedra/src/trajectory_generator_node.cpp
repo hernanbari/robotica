@@ -40,7 +40,7 @@ int main(int argc, char** argv)
   nhp.param<double>("amplitude", amplitude, 1);
   nhp.param<double>("cycles", cycles, 1);
   
-  // build_sin_trajectory(stepping, total_time, amplitude, cycles, trajectory_msg, path_msg);
+  //build_sin_trajectory(stepping, total_time, amplitude, cycles, trajectory_msg, path_msg);
 
   build_box_trajectory(stepping, total_time, trajectory_msg, path_msg);
   trajectory_publisher.publish( trajectory_msg );
@@ -61,18 +61,20 @@ void build_box_trajectory(double stepping, double total_time, robmovil_msgs::Tra
   }
   */
 
-  double x[] = {0, 0, -2, -2, 0};
-  double y[] = {0, -2, -2, 0, 0};
+  //double x[] = {	  0,    0,    0,  0, -0.5, -1, -1.5, -2,   -2, -2,   -2, -2, -1.5, -1.0, -0.5, 0}; //-2.5, -3, 0};
+  //double y[] = {   -0.5, -1.0, -1.5, -2,   -2, -2,   -2, -2, -1.5, -1, -0.5,  0,    0,    0,    0, 0}; //, -2.5, 0, 0};
+  double x[] = {0, -2, -2, 0};
+  double y[] = {-2, -2, 0, 0};
   // Cómo hago para que siempre este orientado hacia afuera?
   // Supuse que con angulos negativos deberia andar
-  double a[] = {0, -90.0, -180.0, -270.0, -0.0};
+  double a[] = {0, 0, 0, 0, 0}; //-90.0, -180.0, -270.0, -0.0};
 
   // Ni idea estas velocidades, tire random
-  double vx = 0.1;
-  double vy = 0.1;
+  double vx = 0.5;
+  double vy = 0.5;
   double va = 1.0;
 
-  for (double t = 0; t <= 4; t = t + 1)
+  for (int t = 0; t <= 3; t = t + 1)
   {
 
     robmovil_msgs::TrajectoryPoint point_msg;
@@ -85,13 +87,13 @@ void build_box_trajectory(double stepping, double total_time, robmovil_msgs::Tra
 
     point_msg.transform.rotation = tf::createQuaternionMsgFromYaw( 0.0 ); //a[int(t)] );
 
-    point_msg.velocity.linear.x = vx;
-    point_msg.velocity.linear.y = vy;
+    point_msg.velocity.linear.x = 0; //vx;
+    point_msg.velocity.linear.y = 0; //vy;
     point_msg.velocity.linear.z = 0;
 
     point_msg.velocity.angular.x = 0;
     point_msg.velocity.angular.y = 0;
-    point_msg.velocity.angular.z = 1.0; //va;
+    point_msg.velocity.angular.z = 0; //va;
 
     trajectory_msg.points.push_back( point_msg );
     
