@@ -15,7 +15,7 @@ KinematicPositionController::KinematicPositionController(ros::NodeHandle& nh) :
     nhp.param<double>("fixed_goal_y", fixed_goal_y_, 0);     
     nhp.param<double>("fixed_goal_a", fixed_goal_a_, -M_PI_2);
 
-    first = 1;
+    //first = 1;
     goals_achieved_ = 0;     
     
     if(goal_selection == "TIME_BASED")
@@ -36,8 +36,8 @@ KinematicPositionController::KinematicPositionController(ros::NodeHandle& nh) :
  */
 // CHECKEAR VALORES, K_RHO EN DIFERENCIAL ERA 0.4
 #define K_RHO 0.2
-#define K_SIGMA 0.2
-#define K_ALPHA 0.2
+#define K_SIGMA 0.3
+#define K_ALPHA 0.1
 #define K_BETA -0.1
 
 double lineal_interp(const ros::Time& t0, const ros::Time& t1, double y0, double y1, const ros::Time& t)
@@ -67,24 +67,26 @@ bool KinematicPositionController::control(const ros::Time& t, double& vx, double
   double dx = goal_x - current_x;
   double dy = goal_y - current_y;
 
+
+  // ESTO LO HIZO GASTON, PERO ES LA RAZON POR LA QUE LA TRAYECTORIA TIENE PANZA
   // compute dx,dy,theta in goal reference frame
   double dx_rot = cos(-goal_a) * dx - sin(-goal_a) * dy;
   double dy_rot = sin(-goal_a) * dx + cos(-goal_a) * dy;
-  double theta_siegwart = current_a - goal_a;
-
+  double theta_siegwart = goal_a - current_a;
+  /*
   // transform error data to polar coordinates.
   double rho = abs(dx_rot);
   double sigma = abs(dy_rot);
-  double alpha = angles::normalize_angle(atan2(dy_rot, dx_rot) - theta_siegwart);
-  double beta =  angles::normalize_angle(-theta_siegwart - alpha);
-
+  //double alpha = angles::normalize_angle(atan2(dy_rot, dx_rot) - theta_siegwart);
+  //double beta =  angles::normalize_angle(-theta_siegwart - alpha);
+  */
   // use the control law to compute velocity commands.
-  // EN DIFERENCIAL ESTO ES MUCHO MAS COMPLEJO, PERO CREO QUE ESTO ESTA BIEN
-  // A SIMPLE VISTA (EN VREP) FUNCIONA
-  vx = K_RHO * dx_rot;
-  vy = K_SIGMA * dy_rot;
+  // HABRIA QUE AGREGAR MINIMO DE VELOCIDAD, APARTE DE MAXIMO,
+  // PARA CORREGIR RAPIDO CUANDO SE ALEJA UN POCO
+  vx = std::max(-0.1, std::min(K_RHO * dx, 0.1));
+  vy = std::max(-0.1, std::min(K_SIGMA * dy, 0.1));
   //w = K_ALPHA * angles::normalize_angle(theta_siegwart);
-  w = K_ALPHA * angles::normalize_angle(theta_siegwart);// alpha + K_BETA * beta;
+  w = std::max( -0.02, std::min(K_ALPHA * angles::normalize_angle(theta_siegwart), 0.02));// alpha + K_BETA * beta;
 
   // ROS_INFO_STREAM("atan2: " << atan2(dy, dx) << " theta siegwart: " << theta_siegwart << " expected_atheta: "  << current_a << " rho: " << rho << " sigma: " << sigma << " alpha: " << alpha << " beta: " << beta << " vx: " << vx << " vy: " << vy << " w: " << w);
   ROS_INFO_STREAM("vx: " << vx << " vy: " << vy << " w: " << w);
@@ -94,7 +96,7 @@ bool KinematicPositionController::control(const ros::Time& t, double& vx, double
 bool KinematicPositionController::getCurrentPose(const ros::Time& t, double& x, double& y, double& a)
 {
   tf2::Transform odom_to_robot;
-  if (not lookupTransformSafe(tfBuffer_, "odom", "base_link", t, odom_to_robot))
+  if (not lookupTransformSafe(tfBuffer_, "odom", "base_link_ekf", t, odom_to_robot))
     return false;
 
   x = odom_to_robot.getOrigin().getX();
@@ -127,12 +129,14 @@ bool KinematicPositionController::getPursuitBasedGoal(const ros::Time& t, double
     return true;
   }
   */
-  if (dist2(current_x,current_y, last_goal_x, last_goal_y) > 0.1){
+  double dist_a = abs(last_goal_a-current_a);
+  if (dist2(current_x,current_y, last_goal_x, last_goal_y) > 0.5 || dist_a * 57 > 20){
     x = last_goal_x;
     y = last_goal_y;
     a = last_goal_a;
     return true;
   }
+  //if (goals_achieved_ == 15)
   if (goals_achieved_ == 3)
   {
     goals_achieved_ = 0;
@@ -148,8 +152,8 @@ bool KinematicPositionController::getPursuitBasedGoal(const ros::Time& t, double
   last_goal_y = y;
   last_goal_a = a;
   return true;
-
-
+}
+/*
   // Si nos encontramos "cerca" del final, se establece el ultimo wpoint como goal
   const robmovil_msgs::TrajectoryPoint& last_wpoint = trajectory.points.back(); 
   
@@ -181,10 +185,10 @@ bool KinematicPositionController::getPursuitBasedGoal(const ros::Time& t, double
     }
   }
   
-  /* Comenzando desde el wpoint mas cercano, se busca el siguiente wpoint que se distancie
+   Comenzando desde el wpoint mas cercano, se busca el siguiente wpoint que se distancie
    * en almenos 0.5 metros. Esto corresponde al concepto de lookahead en el controlador "PurePursuit"
    * NOTA: como el lookahead solo checkea distancia en x,y. Dado que no comprueba la diferencia
-   *       de los angulos, esto solo es valido en trayectorias continuas con desplazamiento considerable en x,y. */
+   *       de los angulos, esto solo es valido en trayectorias continuas con desplazamiento considerable en x,y. 
   for(unsigned int i = closest_idx; i < trajectory.points.size(); i++)
   {
     const robmovil_msgs::TrajectoryPoint& point = trajectory.points[i];
@@ -205,7 +209,7 @@ bool KinematicPositionController::getPursuitBasedGoal(const ros::Time& t, double
   
   return true;
 }
-
+*/
 bool KinematicPositionController::getTimeBasedGoal(const ros::Time& t, double& x, double& y, double& a)
 {
   size_t next_point_idx;

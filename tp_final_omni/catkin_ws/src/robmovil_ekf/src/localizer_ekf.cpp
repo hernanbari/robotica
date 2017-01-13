@@ -3,9 +3,9 @@
 #include <tf/tf.h>
 #include "localizer_ekf.h"
 
-#define NEAREST_NEIGHBOR_RADIUS 1.0
+#define NEAREST_NEIGHBOR_RADIUS 1.5
 
-robmovil_ekf::LocalizerEKF::LocalizerEKF(void) : EKFilter(3, 2, 3, 2, 2)
+robmovil_ekf::LocalizerEKF::LocalizerEKF(void) : EKFilter(3, 3, 3, 2, 2)
 {
   delta_t = 0;
 
@@ -121,7 +121,7 @@ void robmovil_ekf::LocalizerEKF::makeA(void)
 
 	// SEGUN EL TP3:
 	A(1,3) = -u(1)*sin(x(3))*delta_t-u(2)*cos(x(3))*delta_t;
-  A(2,3) = u(1)*cos(x(3))*delta_t-u(2)*sin(x(3))*delta_t;
+	A(2,3) = u(1)*cos(x(3))*delta_t-u(2)*sin(x(3))*delta_t;
 
   ROS_DEBUG_STREAM("A: " << std::endl << A);
 }
@@ -146,15 +146,15 @@ void robmovil_ekf::LocalizerEKF::makeBaseW(void)
 /** covarianza de W (ruido en f) */
 void robmovil_ekf::LocalizerEKF::makeBaseQ()
 {
-  Q(1,1) = 0.01; // Var(w1) = 0.1^2 (1 milimetro de desvio estandar)
+  Q(1,1) = 0.001; // Var(w1) = 0.1^2 (1 milimetro de desvio estandar)
   Q(1,2) = 0;
   Q(1,3) = 0;
   Q(2,1) = 0;
-  Q(2,2) = 0.01; // Var(w2) = 0.1^2
+  Q(2,2) = 0.001; // Var(w2) = 0.1^2
   Q(2,3) = 0;
   Q(3,1) = 0;
   Q(3,2) = 0;
-  Q(3,3) = 0.01; // Var(w3) = 0.1^2
+  Q(3,3) = 0.001; // Var(w3) = 0.1^2
 }
 
 /** Jacobiano de H respecto del modelo de sensado (h) (valores iniciales) **/
@@ -383,7 +383,7 @@ robmovil_ekf::LocalizerEKF::Vector robmovil_ekf::LocalizerEKF::landmark2measure(
 
   /* COMPLETAR */
   tf::Transform transform_robot_world = transform_world_robot.inverse();
-  tf::Point relative_landmark = transform_robot_world(landmark);
+  tf::Point relative_landmark = transform_robot_world * landmark;
 
   ROS_DEBUG_STREAM("relative_landmark: " << relative_landmark.getX() << ", " << relative_landmark.getY() << ", " << relative_landmark.getZ());
 
@@ -391,7 +391,7 @@ robmovil_ekf::LocalizerEKF::Vector robmovil_ekf::LocalizerEKF::landmark2measure(
   measure(1) = sqrt(pow(relative_landmark.getX(),2)+pow(relative_landmark.getY(),2));
 
   relative_landmark.normalize();
-  measure(2) = angles::normalize_angle(atan2(relative_landmark.getY(), relative_landmark.getX())); // Calculo del phi
+  measure(2) = angles::normalize_angle(atan2(landmark.getY()-x(2), landmark.getX()-x(1))-x(3)); // Calculo del phi
 
   return measure;
 }

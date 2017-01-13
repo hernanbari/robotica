@@ -111,42 +111,47 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::MultiEncoderTicks& e
   // PUEDE SER QUE SEA UN ERROR ACEPTABLE/ESPERABLE O TAL VEA HAY ALGO MAL
   // NUNCA USO QUE EL ENCODER DA 500 VUELTAS
 
-  double delta_front_left 	= delta_ticks_front_left  * (M_PI/180);
-  double delta_front_right 	= delta_ticks_front_right * (M_PI/180);
-	double delta_rear_left 		= delta_ticks_rear_left   * (M_PI/180);
-  double delta_rear_right 	= delta_ticks_rear_right  * (M_PI/180);
-
   double delta_t = (encoder.header.stamp - last_ticks_time).toSec();
 
-  double vel_x      = ( delta_front_left + delta_front_right + delta_rear_left + delta_rear_right) * WHEEL_RADIUS/4            / delta_t;
-  double vel_y      = (-delta_front_left + delta_front_right + delta_rear_left - delta_rear_right) * WHEEL_RADIUS/4            / delta_t;
-  double vel_theta  = (-delta_front_left + delta_front_right - delta_rear_left + delta_rear_right) * WHEEL_RADIUS/(4*(LX+LY))  / delta_t;
+  double delta_front_left 	= delta_ticks_front_left  * (2*M_PI/ENCODER_TICKS) / delta_t;
+  double delta_front_right 	= delta_ticks_front_right * (2*M_PI/ENCODER_TICKS) / delta_t;
+	double delta_rear_left 		= delta_ticks_rear_left   * (2*M_PI/ENCODER_TICKS) / delta_t;
+  double delta_rear_right 	= delta_ticks_rear_right  * (2*M_PI/ENCODER_TICKS) / delta_t;
 
-  double robot_dir = atan2(vel_y, vel_x);
-  double robot_vel = pow(pow(vel_x,2) + pow(vel_y,2), 0.5);
+  
+  double vel_x      = ( delta_front_left + delta_front_right + delta_rear_left + delta_rear_right) * WHEEL_RADIUS/4;
+  double vel_y      = (-delta_front_left + delta_front_right + delta_rear_left - delta_rear_right) * WHEEL_RADIUS/4;
+  double vel_theta  = (-delta_front_left + delta_front_right - delta_rear_left + delta_rear_right) * WHEEL_RADIUS/(4*(LX+LY));
+
+  
+  // double vel_dir = atan2(vel_y, vel_x);
+  // double vel_norm = pow(pow(vel_x,2) + pow(vel_y,2), 0.5);
 
   // CHECKEAR TODO ESTO DE ABAJO, LAS FORMULAS DE ARRIBA ESTAN BIEN; EL TEMA ES CÖMO SE USAN
   // calculo el desplazamiento relativo
-  double delta_distance = robot_vel*delta_t;
+  // double vel_distance = vel_norm*delta_t;
 
   // double delta_theta 		= (delta_right - delta_left) / WHEEL_BASELINE;
-  // double delta_distance = (delta_left + delta_right) / 2;
+  // double vel_distance = (delta_left + delta_right) / 2;
 
   // ESTA FORMULA LA HICE QUEMADO; PARECE FUNCIONAR PERO NI IDEA POR QUE
   // MAS QUE NADA LA SUMA DE LOS ANGULOS, FUE MAGIA PROBANDO,
   // AL PPIO ERA COS (ALGUNO DE LOS ANGULOS), DESPUES COS * COS
-  double delta_x = delta_distance * cos( robot_dir + theta_);
-  double delta_y = delta_distance * sin( robot_dir + theta_);
+  // double delta_x = vel_distance * cos( vel_dir + theta_);
+  // double delta_y = vel_distance * sin( vel_dir + theta_);
 
   // double delta_t = (encoder.header.stamp - last_ticks_time).toSec();
+
+  double vel_x_rot = cos(theta_) * vel_x - sin(theta_) * vel_y;
+  double vel_y_rot = sin(theta_) * vel_x  + cos(theta_) * vel_y;
 
   // actualizo el estado local
 
   // ROS_DEBUG_STREAM("theta " << theta_);
   // ROS_DEBUG_STREAM("delta theta " << delta_theta);
 
-  x_      += delta_x;
-  y_      += delta_y;
+  x_      += vel_x_rot * delta_t;
+  y_      += vel_y_rot * delta_t;
   theta_  += vel_theta * delta_t;
 
   // normalizo el angulo

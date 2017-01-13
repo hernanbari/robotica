@@ -73,17 +73,18 @@ void robmovil_ekf::LandmarkDetector::on_laser_scan(const sensor_msgs::LaserScanC
     /* se terminaron las mediciones provenientes al landmark que se venia detectando,
      * se calcula la pose del landmark como el centroide de las mediciones */
      
-    //ROS_INFO_STREAM("landmark con " << landmark_points.size() << " puntos");
+    // ROS_INFO_STREAM("landmark con " << landmark_points.size() << " puntos");
     
-    tf::Vector3 centroid(0,0,0);
-
-    /* calculo del centroide */
-    for (int j = 0; j < landmark_points.size(); j++)
-      centroid += landmark_points[j];
-    centroid /= landmark_points.size();
-
+    /* Calculo del centroide: se obtiene el punto mas cercano al robot y estima el centro sumando
+     * el radio en la direccion de dicho punto. */
+    tf::Vector3 centroid = *std::min_element(landmark_points.begin(), landmark_points.end(), 
+                            [this](const tf::Vector3& v1, const tf::Vector3 v2)
+                            { return (laser_transform * v1).length() < (laser_transform * v2).length();});
+    centroid += centroid.normalized() * LANDMARK_DIAMETER/2;
+    
     /* convierto el centroide a coordenadas del robot */
     centroid = laser_transform * centroid;
+
     ROS_INFO_STREAM("landmark detectado (en coordenadas del robot): " << centroid.getX() << " " << centroid.getY() << " " << centroid.getZ());
 
     centroids.push_back(centroid);
@@ -112,11 +113,11 @@ void robmovil_ekf::LandmarkDetector::on_laser_scan(const sensor_msgs::LaserScanC
 bool robmovil_ekf::LandmarkDetector::update_laser_tf(const ros::Time& required_time)
 {
   ROS_INFO_STREAM("robot_frame "<< robot_frame << std::endl);
-  if (!listener->waitForTransform(laser_frame, robot_frame, required_time, ros::Duration(1)))
+  if (!listener->waitForTransform(robot_frame, laser_frame, required_time, ros::Duration(1)))
     return false;
   else
   {
-    listener->lookupTransform(laser_frame, robot_frame, ros::Time(0), laser_transform);
+    listener->lookupTransform(robot_frame, laser_frame, ros::Time(0), laser_transform);
     return true;
   }
 }

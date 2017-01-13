@@ -63,29 +63,45 @@ void build_box_trajectory(double stepping, double total_time, robmovil_msgs::Tra
 
   //double x[] = {	  0,    0,    0,  0, -0.5, -1, -1.5, -2,   -2, -2,   -2, -2, -1.5, -1.0, -0.5, 0}; //-2.5, -3, 0};
   //double y[] = {   -0.5, -1.0, -1.5, -2,   -2, -2,   -2, -2, -1.5, -1, -0.5,  0,    0,    0,    0, 0}; //, -2.5, 0, 0};
-  double x[] = {0, -2, -2, 0};
-  double y[] = {-2, -2, 0, 0};
+  /*double x[] = { 0,  0,  0,  0,
+  				-1, -2, -3, -4, 
+  				-4, -4, -4, -4,
+  				-3, -2, -1,  0};
+  double y[] = {-1, -2, -3, -4,
+  				-4, -4, -4, -4,
+  				-3, -2, -1,  0,
+  				 0,  0,  0,  0,};
+  */
   // Cómo hago para que siempre este orientado hacia afuera?
   // Supuse que con angulos negativos deberia andar
-  double a[] = {0, 0, 0, 0, 0}; //-90.0, -180.0, -270.0, -0.0};
-
+  double x[] = {0, -4, -4, 0};
+  double y[] = {-4, -4, 0, 0};
+  double a[] = {-M_PI/2, -M_PI, -M_PI*3/2, 0}; //-90.0, -180.0, -270.0, -0.0};
+  /*double a[] = {-M_PI/ 8,  -M_PI/ 4,  -M_PI*(3/8),  -M_PI/2 ,
+  				-M_PI/2 * (5/4),  -M_PI/2 * (6/4),  -M_PI/2 * (7/4),  -M_PI/2 * (8/4),
+  				-M_PI/2 * (9/4),  -M_PI/2 * (10/4), -M_PI/2 * (11/4), -M_PI/2 * (12/4), 
+  				-M_PI/2 * (13/4), -M_PI/2 * (14/4), -M_PI/2 * (15/4),        -0}; //-90.0, -180.0, -270.0, -0.0};
+	*/
+  /*
   // Ni idea estas velocidades, tire random
   double vx = 0.5;
   double vy = 0.5;
   double va = 1.0;
+  */
 
+  //for (int t = 0; t <= 15; t = t + 1)
   for (int t = 0; t <= 3; t = t + 1)
   {
 
     robmovil_msgs::TrajectoryPoint point_msg;
 
-    point_msg.time_from_start = ros::Duration( t*5.0 );
+    point_msg.time_from_start = ros::Duration( 0 );
 
     point_msg.transform.translation.x = x[int(t)];
     point_msg.transform.translation.y = y[int(t)];
     point_msg.transform.translation.z = 0;
 
-    point_msg.transform.rotation = tf::createQuaternionMsgFromYaw( 0.0 ); //a[int(t)] );
+    point_msg.transform.rotation = tf::createQuaternionMsgFromYaw( a[int(t)] );
 
     point_msg.velocity.linear.x = 0; //vx;
     point_msg.velocity.linear.y = 0; //vy;
@@ -106,7 +122,7 @@ void build_box_trajectory(double stepping, double total_time, robmovil_msgs::Tra
     stamped_pose_msg.pose.position.y = y[int(t)];
     stamped_pose_msg.pose.position.z = 0;
     
-    stamped_pose_msg.pose.orientation = tf::createQuaternionMsgFromYaw( 0.0 ); //a[int(t)]);
+    stamped_pose_msg.pose.orientation = tf::createQuaternionMsgFromYaw( a[int(t)] );
     
     path_msg.poses.push_back(stamped_pose_msg);
   }

@@ -25,8 +25,8 @@ class KinematicPositionController : public TrajectoryFollower
     int goals_achieved_;
     int first;
     double last_goal_x = 0;
-    double last_goal_y = -2;
-    double last_goal_a = 0;
+    double last_goal_y = -4;  // -1;
+    double last_goal_a = -M_PI/2; // -M_PI/8;
     
     GoalSelectionType goal_selection_;
     
@@ -62,6 +62,7 @@ class KinematicPositionController : public TrajectoryFollower
       expected_pose.pose.position.z = 0;
       tf2::Quaternion orientation;
       orientation.setRPY(0,0,goal_a);
+      ROS_INFO_STREAM("goal_x " << goal_x << " goal_y " << goal_y << " goal_a " << goal_a << std::endl);
       expected_pose.pose.orientation = tf2::toMsg(orientation);
       expected_position_pub.publish(expected_pose);
     }
