@@ -120,8 +120,8 @@ void robmovil_ekf::LocalizerEKF::makeA(void)
   */
 
 	// SEGUN EL TP3:
-	A(1,3) = -u(1)*sin(x(3))*delta_t-u(2)*cos(x(3))*delta_t;
-	A(2,3) = u(1)*cos(x(3))*delta_t-u(2)*sin(x(3))*delta_t;
+	A(1,3) = -u(1)*sin(x(3))*delta_t - u(2)*cos(x(3))*delta_t;
+	A(2,3) = u(1)*cos(x(3))*delta_t - u(2)*sin(x(3))*delta_t;
 
   ROS_DEBUG_STREAM("A: " << std::endl << A);
 }
@@ -196,7 +196,7 @@ void robmovil_ekf::LocalizerEKF::makeH(void)
 
   /* COMPLETAR: Obtener las coordenadas de correspondence_landmark con respecto al robot */
   tf::Transform transform_robot_world = transform_world_robot.inverse();
-  tf::Point relative_landmark = transform_robot_world(correspondence_landmark);
+  tf::Point relative_landmark = transform_robot_world * correspondence_landmark;
 
   // Coordenadas cartesianas del landmark con respecto al robot
   ROS_DEBUG_STREAM("Relative_landmark: " << relative_landmark.getX() << " " << relative_landmark.getY() << " " << relative_landmark.getZ());
@@ -218,8 +218,8 @@ void robmovil_ekf::LocalizerEKF::makeH(void)
     double d = distance(x_l, y_l, x_r, y_r);
     H(1,1) = -(x_l-x_r)/d;
     H(1,2) = -(y_l-y_r)/d;
-    H(2,1) = (y_l-y_r)/d;
-    H(2,2) = -(x_l-x_r)/d;
+    H(2,1) = (y_l-y_r)/(d*d);
+    H(2,2) = -(x_l-x_r)/(d*d);
   }
 
   ROS_DEBUG_STREAM("H: " << std::endl << H);
@@ -388,10 +388,10 @@ robmovil_ekf::LocalizerEKF::Vector robmovil_ekf::LocalizerEKF::landmark2measure(
   ROS_DEBUG_STREAM("relative_landmark: " << relative_landmark.getX() << ", " << relative_landmark.getY() << ", " << relative_landmark.getZ());
 
   LocalizerEKF::Vector measure(2);
-  measure(1) = sqrt(pow(relative_landmark.getX(),2)+pow(relative_landmark.getY(),2));
+  measure(1) = relative_landmark.length();  //sqrt(pow(landmark.getX()-x(1),2)+pow(landmark.getY()-x(2),2));
 
   relative_landmark.normalize();
-  measure(2) = angles::normalize_angle(atan2(landmark.getY()-x(2), landmark.getX()-x(1))-x(3)); // Calculo del phi
+  measure(2) = angles::normalize_angle(atan2(relative_landmark.getY(), relative_landmark.getX()));   // landmark.getY()-x(2), landmark.getX()-x(1))-x(3)); // Calculo del phi
 
   return measure;
 }

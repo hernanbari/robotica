@@ -35,8 +35,8 @@ KinematicPositionController::KinematicPositionController(ros::NodeHandle& nh) :
  * - K_BETA < 0
  */
 // CHECKEAR VALORES, K_RHO EN DIFERENCIAL ERA 0.4
-#define K_RHO 0.2
-#define K_SIGMA 0.3
+#define K_RHO 1  // 0.2
+#define K_SIGMA 1 // 0.3
 #define K_ALPHA 0.1
 #define K_BETA -0.1
 
@@ -83,10 +83,10 @@ bool KinematicPositionController::control(const ros::Time& t, double& vx, double
   // use the control law to compute velocity commands.
   // HABRIA QUE AGREGAR MINIMO DE VELOCIDAD, APARTE DE MAXIMO,
   // PARA CORREGIR RAPIDO CUANDO SE ALEJA UN POCO
-  vx = std::max(-0.1, std::min(K_RHO * dx, 0.1));
-  vy = std::max(-0.1, std::min(K_SIGMA * dy, 0.1));
+  vx = std::max(-0.15, std::min(K_RHO * dx, 0.15));
+  vy = std::max(-0.15, std::min(K_SIGMA * dy, 0.15));
   //w = K_ALPHA * angles::normalize_angle(theta_siegwart);
-  w = std::max( -0.02, std::min(K_ALPHA * angles::normalize_angle(theta_siegwart), 0.02));// alpha + K_BETA * beta;
+  w = std::max( -0.05, std::min(K_ALPHA * angles::normalize_angle(theta_siegwart), 0.05));// alpha + K_BETA * beta;
 
   // ROS_INFO_STREAM("atan2: " << atan2(dy, dx) << " theta siegwart: " << theta_siegwart << " expected_atheta: "  << current_a << " rho: " << rho << " sigma: " << sigma << " alpha: " << alpha << " beta: " << beta << " vx: " << vx << " vy: " << vy << " w: " << w);
   ROS_INFO_STREAM("vx: " << vx << " vy: " << vy << " w: " << w);
