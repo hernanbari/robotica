@@ -24,9 +24,13 @@ class KinematicPositionController : public TrajectoryFollower
     
     int goals_achieved_;
     int first;
+    // double last_goal_x = 0;
+    // double last_goal_y = -4;  // -1;
+    // double last_goal_a = -M_PI/2; // -M_PI/8;
+
     double last_goal_x = 0;
-    double last_goal_y = -4;  // -1;
-    double last_goal_a = -M_PI/2; // -M_PI/8;
+    double last_goal_y = -1;  // -1;
+    double last_goal_a = -M_PI*0.125; // -M_PI/8;
     
     GoalSelectionType goal_selection_;
     

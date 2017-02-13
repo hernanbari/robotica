@@ -43,7 +43,7 @@ void PioneerOdometry::on_velocity_cmd(const geometry_msgs::Twist& twist)
   double yLinearVel = twist.linear.y;
   double angularVel = twist.angular.z;
 
-  ROS_DEBUG_STREAM("xLinearVel: " << xLinearVel << "    yLinearVel: " << yLinearVel << "    angularVel: " << angularVel << std::endl);
+  ROS_INFO_STREAM("xLinearVel: " << xLinearVel << "    yLinearVel: " << yLinearVel << "    angularVel: " << angularVel << std::endl);
 
   
   double vFrontLeft 	= (1/WHEEL_RADIUS) * (xLinearVel - yLinearVel - (LX+LY) * angularVel);
@@ -115,7 +115,7 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::MultiEncoderTicks& e
 
   double delta_front_left 	= delta_ticks_front_left  * (2*M_PI/ENCODER_TICKS) / delta_t;
   double delta_front_right 	= delta_ticks_front_right * (2*M_PI/ENCODER_TICKS) / delta_t;
-	double delta_rear_left 		= delta_ticks_rear_left   * (2*M_PI/ENCODER_TICKS) / delta_t;
+  double delta_rear_left 		= delta_ticks_rear_left   * (2*M_PI/ENCODER_TICKS) / delta_t;
   double delta_rear_right 	= delta_ticks_rear_right  * (2*M_PI/ENCODER_TICKS) / delta_t;
 
   
@@ -196,7 +196,7 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::MultiEncoderTicks& e
   // Actualizo las variables de estado
 
   last_ticks_front_left_ = encoder.ticks[0].data;
-	last_ticks_front_right_ = encoder.ticks[1].data;
+  last_ticks_front_right_ = encoder.ticks[1].data;
 	last_ticks_rear_left_ = encoder.ticks[2].data;
 	last_ticks_rear_right_ = encoder.ticks[3].data;
 	last_ticks_time = encoder.header.stamp;
