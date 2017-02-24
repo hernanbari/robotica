@@ -35,10 +35,10 @@ KinematicPositionController::KinematicPositionController(ros::NodeHandle& nh) :
  * - K_BETA < 0
  */
 // CHECKEAR VALORES, K_RHO EN DIFERENCIAL ERA 0.4
-#define K_RHO 1  // 0.2
+#define K_RHO 0.4  // 0.2
 #define K_SIGMA 1 // 0.3
-#define K_ALPHA 1
-//#define K_BETA -0.1
+#define K_ALPHA 0.4
+#define K_BETA 0.4
 
 double lineal_interp(const ros::Time& t0, const ros::Time& t1, double y0, double y1, const ros::Time& t)
 {
@@ -68,7 +68,33 @@ bool KinematicPositionController::control(const ros::Time& t, double& vx, double
   double dy = goal_y - current_y;
   double theta_siegwart = goal_a - current_a;
 
-  /*
+  
+  // HABRIA QUE AGREGAR MINIMO DE VELOCIDAD, APARTE DE MAXIMO,
+  // PARA CORREGIR RAPIDO CUANDO SE ALEJA UN POCO
+  
+
+  // vx = (std::max(-0.1, std::min(K_RHO * dx, 0.1)));
+  // vy = std::max(-0.1, std::min(K_SIGMA * dy, 0.1));
+  // w = K_ALPHA * angles::normalize_angle(theta_siegwart);
+  // w = std::max( -0.05, std::min(K_ALPHA * angles::normalize_angle(theta_siegwart), 0.05));// alpha + K_BETA * beta;
+
+  w = theta_siegwart * K_RHO;
+  vx = (cos(-current_a) * dx - sin(-current_a) * dy) * K_ALPHA;
+  vy = (sin(-current_a) * dx + cos(-current_a) * dy) * K_BETA;
+
+
+  // vx = std::max(-0.1, std::min(vx, 0.1));
+  // vy = std::max(-0.1, std::min(vy, 0.1));
+  // w = std::max( -0.05, std::min(w, 0.05));// alpha + K_BETA * beta;
+
+
+  // ROS_INFO_STREAM("atan2: " << atan2(dy, dx) << " theta siegwart: " << theta_siegwart << " expected_atheta: "  << current_a << " rho: " << rho << " sigma: " << sigma << " alpha: " << alpha << " beta: " << beta << " vx: " << vx << " vy: " << vy << " w: " << w);
+  ROS_INFO_STREAM("current_x: " << current_x << " current_y: " << current_y << " current_theta: " << current_a);
+  ROS_INFO_STREAM("vx: " << vx << " vy: " << vy << " vw: " << w);
+  return true;
+}
+
+/*
   // ESTO LO HIZO GASTON, PERO ES LA RAZON POR LA QUE LA TRAYECTORIA TIENE PANZA
   // compute dx,dy,theta in goal reference frame
   double dx_rot = cos(-goal_a) * dx - sin(-goal_a) * dy;
@@ -82,18 +108,6 @@ bool KinematicPositionController::control(const ros::Time& t, double& vx, double
   //double beta =  angles::normalize_angle(-theta_siegwart - alpha);
   */
   // use the control law to compute velocity commands.
-  // HABRIA QUE AGREGAR MINIMO DE VELOCIDAD, APARTE DE MAXIMO,
-  // PARA CORREGIR RAPIDO CUANDO SE ALEJA UN POCO
-  vx = std::max(-0.1, std::min(K_RHO * dx, 0.1));
-  vy = std::max(-0.1, std::min(K_SIGMA * dy, 0.1));
-  //w = K_ALPHA * angles::normalize_angle(theta_siegwart);
-  w = std::max( -0.05, std::min(K_ALPHA * angles::normalize_angle(theta_siegwart), 0.05));// alpha + K_BETA * beta;
-
-  // ROS_INFO_STREAM("atan2: " << atan2(dy, dx) << " theta siegwart: " << theta_siegwart << " expected_atheta: "  << current_a << " rho: " << rho << " sigma: " << sigma << " alpha: " << alpha << " beta: " << beta << " vx: " << vx << " vy: " << vy << " w: " << w);
-  ROS_INFO_STREAM("current_x: " << current_x << " current_y: " << current_y << " current_theta: " << current_a);
-  ROS_INFO_STREAM("vx: " << vx << " vy: " << vy << " vw: " << w);
-  return true;
-}
 
 bool KinematicPositionController::getCurrentPose(const ros::Time& t, double& x, double& y, double& a)
 {
@@ -133,14 +147,14 @@ bool KinematicPositionController::getPursuitBasedGoal(const ros::Time& t, double
   */
   double dist_a = last_goal_a-current_a;
   ROS_INFO_STREAM("dist_a:    " << dist_a << "     last_goal_a   " << last_goal_a << "     current_a      " << current_a);
-  if (dist2(current_x,current_y, last_goal_x, last_goal_y) > 0.05 || dist_a*57 > 2 || dist_a*57 < -2){
+  if (dist2(current_x,current_y, last_goal_x, last_goal_y) > 0.2 || dist_a*57 > 5 || dist_a*57 < -5){
     x = last_goal_x;
     y = last_goal_y;
     a = last_goal_a;
     return true;
   }
   //if (goals_achieved_ == 15)
-  if (goals_achieved_ == 15)
+  if (goals_achieved_ == 3)
   {
     goals_achieved_ = 0;
   }

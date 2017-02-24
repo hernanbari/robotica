@@ -71,13 +71,14 @@ void build_box_trajectory(double stepping, double total_time, robmovil_msgs::Tra
   				-4, -4, -4, -4,
   				-3, -2, -1,  0,
   				 0,  0,  0,  0,};
-  */
+*/
   // Cómo hago para que siempre este orientado hacia afuera?
   // Supuse que con angulos negativos deberia andar
-  // double x[] = {0, -4, -4, 0};
-  // double y[] = {-4, -4, 0, 0};
-  // double a[] = {-M_PI/2, -M_PI, -M_PI*3/2, 0}; //-90.0, -180.0, -270.0, -0.0};
+  double x[] = {0, -4, -4, 0};
+  double y[] = {-4, -4, 0, 0};
+  double a[] = {-M_PI*0.5, -M_PI, -M_PI*1.5, 0}; //-90.0, -180.0, -270.0, -0.0};
   
+  /*
   double x[] = {0, 0, 0, 0,
                 -1, -2, -3, -4,
                 -4, -4, -4, -4,
@@ -91,6 +92,7 @@ void build_box_trajectory(double stepping, double total_time, robmovil_msgs::Tra
                 -M_PI*0.625, -M_PI*0.750, -M_PI*0.875, -M_PI,  
                 -M_PI*1.125, -M_PI*1.250, -M_PI*1.375, -M_PI*1.5,
                 -M_PI*1.625, -M_PI*1.750, -M_PI*1.875, 0};
+*/
 
   /*double a[] = {-M_PI/4, -M_PI/2, 
                 -M_PI*0.75, -M_PI, 
@@ -111,7 +113,7 @@ void build_box_trajectory(double stepping, double total_time, robmovil_msgs::Tra
   */
 
   //for (int t = 0; t <= 15; t = t + 1)
-  for (int t = 0; t <= 15; t = t + 1)
+  for (int t = 0; t <= 3; t = t + 1)
   {
 
     robmovil_msgs::TrajectoryPoint point_msg;
