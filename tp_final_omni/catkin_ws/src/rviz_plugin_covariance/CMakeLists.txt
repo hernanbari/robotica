@@ -33,7 +33,7 @@ else()
 
 endif()
 
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIR})
 
 add_definitions(-DQT_NO_KEYWORDS)

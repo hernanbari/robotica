@@ -37,8 +37,10 @@ PioneerOdometry::PioneerOdometry(ros::NodeHandle& nh)
   tf_broadcaster = boost::make_shared<tf::TransformBroadcaster>();
 }
 
-void PioneerOdometry::on_velocity_cmd(const geometry_msgs::Twist& twist)
+void PioneerOdometry::on_velocity_cmd(const geometry_msgs::TwistStamped& twist2)
 {
+  geometry_msgs::Twist twist = twist2.twist;
+
   double xLinearVel = twist.linear.x;
   double yLinearVel = twist.linear.y;
   double angularVel = twist.angular.z;

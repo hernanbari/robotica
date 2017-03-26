@@ -1,10 +1,11 @@
 #include <lazo_abierto/TrajectoryFollower.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/TwistStamped.h>
 
 TrajectoryFollower::TrajectoryFollower(ros::NodeHandle& nh)
   : nh_( nh )
 {
-  cmd_pub_ = nh.advertise<geometry_msgs::Twist>("/robot/cmd_vel", 1);
+  cmd_pub_ = nh.advertise<geometry_msgs::TwistStamped>("/robot/cmd_vel", 1);
 
   trajectory_sub_ = nh.subscribe("/robot/trajectory", 1, &TrajectoryFollower::handleNewTrajectory, this);
 }
@@ -34,22 +35,24 @@ void TrajectoryFollower::timerCallback(const ros::TimerEvent& event)
   if( not control(t, vx, vy, w) ) {
     ROS_INFO("Trajectory finished");
     timer_.stop();
-    geometry_msgs::Twist cmd;
+    geometry_msgs::TwistStamped cmd;
     cmd_pub_.publish( cmd ); // se detiene luego de terminar el trayecto    
     return;
   }
 
   // Crear mensaje
 
-  geometry_msgs::Twist cmd;
+  geometry_msgs::TwistStamped cmd;
 
-  cmd.linear.x = vx;
-  cmd.linear.y = vy;
-  cmd.linear.z = 0;
+  cmd.header.stamp = t;
 
-  cmd.angular.x = 0;
-  cmd.angular.y = 0;
-  cmd.angular.z = w;
+  cmd.twist.linear.x = vx;
+  cmd.twist.linear.y = vy;
+  cmd.twist.linear.z = 0;
+
+  cmd.twist.angular.x = 0;
+  cmd.twist.angular.y = 0;
+  cmd.twist.angular.z = w;
 
   cmd_pub_.publish( cmd );
 }

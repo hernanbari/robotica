@@ -35,10 +35,9 @@ KinematicPositionController::KinematicPositionController(ros::NodeHandle& nh) :
  * - K_BETA < 0
  */
 // CHECKEAR VALORES, K_RHO EN DIFERENCIAL ERA 0.4
-#define K_RHO 0.4  // 0.2
-#define K_SIGMA 1 // 0.3
-#define K_ALPHA 0.4
-#define K_BETA 0.4
+#define K_RHO 0.25  // 0.2
+#define K_ALPHA 0.25
+#define K_BETA 0.25
 
 double lineal_interp(const ros::Time& t0, const ros::Time& t1, double y0, double y1, const ros::Time& t)
 {
@@ -147,7 +146,7 @@ bool KinematicPositionController::getPursuitBasedGoal(const ros::Time& t, double
   */
   double dist_a = last_goal_a-current_a;
   ROS_INFO_STREAM("dist_a:    " << dist_a << "     last_goal_a   " << last_goal_a << "     current_a      " << current_a);
-  if (dist2(current_x,current_y, last_goal_x, last_goal_y) > 0.2 || dist_a*57 > 5 || dist_a*57 < -5){
+  if (dist2(current_x,current_y, last_goal_x, last_goal_y) > 0.4 || dist_a*57 > 5 || dist_a*57 < -5){
     x = last_goal_x;
     y = last_goal_y;
     a = last_goal_a;

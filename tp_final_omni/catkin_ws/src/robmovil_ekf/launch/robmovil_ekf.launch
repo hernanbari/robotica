@@ -10,9 +10,6 @@
   <!-- Run clock publisher-->
   <node pkg="vrep_util" type="clock_publisher" name="clock_publisher" output="screen" />
 
-  <!-- Run keyboard input interface-->
-  <include file="$(find universal_teleop)/launch/vrep_pioneer_irm.launch" />
-
   <group if="$(arg detector)">
       <node pkg="imu_laser_catedra" type="landmark_detector" name="landmark_detector" output="screen">
         <param name="publish_robot_frame" value="base_link_ekf"/>
@@ -39,8 +36,11 @@
   <node pkg="lazo_cerrado_catedra" type="trajectory_follower" name="trajectory_follower" output="screen" >
     <param name="goal_selection" type="str" value="PURSUIT_BASED"/>
     
-    <param name="fixed_goal_x" type="double" value="-4"/>
+    <param name="fixed_goal_x" type="double" value="0"/>
     <param name="fixed_goal_y" type="double" value="-4"/>
-    <param name="fixed_goal_a" type="double" value="4.71238"/> <!-- -3/2 * PI -->
+    <param name="fixed_goal_a" type="double" value="-1.57"/> <!-- -3/2 * PI -->
   </node>  
+
+  <node pkg="lazo_cerrado" type="logger" name="logger" output="screen" />
+
 </launch>

@@ -6,8 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /PoseWithCovariance1/Covariance1
-        - /PoseWithCovariance1/Covariance1/Position1
         - /PointCloud1/Status1
         - /TF1/Frames1
         - /LaserScan1/Status1
@@ -44,36 +42,9 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: odom
       Value: true
-    - Alpha: 0
-      Axes Length: 1
-      Axes Radius: 0.100000001
-      Class: rviz_plugin_covariance/PoseWithCovariance
-      Color: 255; 25; 0
-      Covariance:
-        Orientation:
-          Alpha: 0.5
-          Color: 255; 255; 127
-          Color Style: Unique
-          Frame: Local
-          Offset: 1
-          Scale: 1
-          Value: false
-        Position:
-          Alpha: 0.300000012
-          Color: 204; 51; 204
-          Scale: 1
-          Value: true
-        Value: true
+    - Class: rviz_plugin_covariance/PoseWithCovariance
       Enabled: true
-      Head Length: 0.300000012
-      Head Radius: 0.100000001
       Name: PoseWithCovariance
-      Shaft Length: 1
-      Shaft Radius: 0.0500000007
-      Shape: Arrow
-      Topic: /localizer/pose
-      Unreliable: false
-      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -143,7 +114,11 @@ Visualization Manager:
           Value: true
         base_link_ekf:
           Value: true
+        base_link_gt:
+          Value: true
         front_laser:
+          Value: true
+        map:
           Value: true
         odom:
           Value: true
@@ -153,11 +128,15 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
+        map:
+          {}
         odom:
           base_link:
             front_laser:
               {}
           base_link_ekf:
+            {}
+          base_link_gt:
             {}
       Update Interval: 0
       Value: true
@@ -244,6 +223,16 @@ Visualization Manager:
       Topic: /goal_pose
       Unreliable: false
       Value: true
+    - Angle Tolerance: 0
+      Class: rviz/Odometry
+      Color: 0; 0; 0
+      Enabled: true
+      Keep: 1
+      Length: 1
+      Name: Odometry
+      Position Tolerance: 0
+      Topic: /robot/ground_truth
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -268,16 +257,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 8.49708176
+      Distance: 9.37969017
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.76839602
-        Y: -0.0656092018
-        Z: 0.315914005
+        X: -1.31568074
+        Y: -1.86633825
+        Z: 0.303408563
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Name: Current View

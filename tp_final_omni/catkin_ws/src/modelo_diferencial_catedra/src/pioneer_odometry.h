@@ -2,6 +2,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <robmovil_msgs/MultiEncoderTicks.h>
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
@@ -15,7 +16,7 @@ class PioneerOdometry
 
     PioneerOdometry(ros::NodeHandle& nh);
 
-    void on_velocity_cmd(const geometry_msgs::Twist& twist);
+    void on_velocity_cmd(const geometry_msgs::TwistStamped& twist);
 
     void on_encoder_ticks(const robmovil_msgs::MultiEncoderTicks& encoder);
 
