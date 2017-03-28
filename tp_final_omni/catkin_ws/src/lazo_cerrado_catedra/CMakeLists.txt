@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   robmovil_msgs
   cmake_modules
   angles
+  tf
 )
 
 ###################################
